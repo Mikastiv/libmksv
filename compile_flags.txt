@@ -3,5 +3,6 @@
 -Wextra
 -Wpedantic
 -Wsign-conversion
+-Wfloat-conversion
 -I.
 -std=c2x
