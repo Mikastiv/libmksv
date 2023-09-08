@@ -1,2 +1,2 @@
 # libmksv
-C library
+C++ library

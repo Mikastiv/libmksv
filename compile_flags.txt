@@ -4,5 +4,5 @@
 -Wpedantic
 -Wsign-conversion
 -Wfloat-conversion
--I.
--std=c2x
+-Iinclude/mksv
+-std=c++20
