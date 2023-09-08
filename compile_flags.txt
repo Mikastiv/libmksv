@@ -1,0 +1,7 @@
+-Wall
+-Werror
+-Wextra
+-Wpedantic
+-Wsign-conversion
+-I.
+-std=c2x
