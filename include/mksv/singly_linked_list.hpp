@@ -1,6 +1,5 @@
 #pragma once
 
-#include "mem.hpp"
 #include "types.hpp"
 
 namespace mksv {
@@ -9,37 +8,11 @@ template <typename T>
 struct SinglyLinkedList {
     struct Node {
         T data;
-        Node* next;
+        Node* next = nullptr;
     };
 
-    mem::Allocator allocator;
-    Node* head;
-    u64 len;
-
-    static SinglyLinkedList
-    init(const mem::Allocator allocator) {
-        return {
-            .allocator = allocator,
-            .head = nullptr,
-            .len = 0,
-        };
-    }
-
-    Node*
-    create_node(const T& elem) {
-        Node* node = allocator.alloc<Node>(1);
-        if (node == nullptr) return nullptr;
-
-        mem::zero({ .ptr = node, .len = 1 });
-        node->data = elem;
-
-        return node;
-    }
-
-    void
-    delete_node(Node* node) {
-        allocator.free<Node>({ .ptr = node, .len = 1 });
-    }
+    Node* head = nullptr;
+    u64 len = 0;
 
     void
     append_node(Node* node) {
@@ -72,18 +45,6 @@ struct SinglyLinkedList {
         --len;
 
         return true;
-    }
-
-    void
-    deinit() {
-        Node* ptr = head;
-        while (ptr != nullptr) {
-            head = ptr->next;
-            delete_node(ptr);
-            ptr = head;
-        }
-        head = nullptr;
-        len = 0;
     }
 };
 
