@@ -15,6 +15,7 @@ struct DoublyLinkedList {
 
     mem::Allocator allocator;
     Node* head;
+    Node* tail;
     u64 len;
 
     static DoublyLinkedList
@@ -22,6 +23,7 @@ struct DoublyLinkedList {
         return {
             .allocator = allocator,
             .head = nullptr,
+            .tail = nullptr,
             .len = 0,
         };
     }
@@ -31,9 +33,8 @@ struct DoublyLinkedList {
         Node* node = allocator.alloc<Node>(1);
         if (node == nullptr) return nullptr;
 
+        mem::zero({ .ptr = node, .len = 1 });
         node->data = elem;
-        node->next = nullptr;
-        node->prev = nullptr;
 
         return node;
     }
@@ -45,36 +46,36 @@ struct DoublyLinkedList {
 
     void
     append_node(Node* node) {
+        if (node == nullptr) return;
+
         if (head == nullptr) {
             head = node;
             head->prev = nullptr;
+            tail = node;
+            tail->next = nullptr;
         } else {
-            Node* ptr = head;
-            while (ptr->next) {
-                ptr = ptr->next;
-            }
-            ptr->next = node;
-            node->prev = ptr;
+            tail->next = node;
+            node->prev = tail;
+            tail = node;
         }
         ++len;
     }
 
     void
     remove_node(Node* node) {
-        if (node == head) {
+        if (node == nullptr) return;
+
+        if (node->prev != nullptr) {
+            node->prev->next = node->next;
+        } else {
             head = node->next;
             head->prev = nullptr;
-            return;
         }
 
-        Node* ptr = head;
-        while (ptr->next) {
-            if (ptr->next == node) break;
-            ptr = ptr->next;
+        if (node->next) {
+            node->next->prev = node->prev;
         }
 
-        ptr->next = node->next;
-        ptr->next->prev = ptr;
         --len;
     }
 
@@ -83,7 +84,7 @@ struct DoublyLinkedList {
         Node* ptr = head;
         while (ptr != nullptr) {
             head = ptr->next;
-            allocator.free<Node>({ .ptr = ptr, .len = 1 });
+            delete_node(ptr);
             ptr = head;
         }
         head = nullptr;

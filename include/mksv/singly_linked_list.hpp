@@ -30,8 +30,8 @@ struct SinglyLinkedList {
         Node* node = allocator.alloc<Node>(1);
         if (node == nullptr) return nullptr;
 
+        mem::zero({ .ptr = node, .len = 1 });
         node->data = elem;
-        node->next = nullptr;
 
         return node;
     }
@@ -55,21 +55,23 @@ struct SinglyLinkedList {
         ++len;
     }
 
-    void
+    bool
     remove_node(Node* node) {
+        if (node == nullptr) return false;
+
         if (node == head) {
             head = node->next;
-            return;
+        } else {
+            Node* ptr = head;
+            while (ptr->next != node) {
+                ptr = ptr->next;
+            }
+            ptr->next = node->next;
         }
 
-        Node* ptr = head;
-        while (ptr->next) {
-            if (ptr->next == node) break;
-            ptr = ptr->next;
-        }
-
-        ptr->next = node->next;
         --len;
+
+        return true;
     }
 
     void
@@ -77,7 +79,7 @@ struct SinglyLinkedList {
         Node* ptr = head;
         while (ptr != nullptr) {
             head = ptr->next;
-            allocator.free<Node>({ .ptr = ptr, .len = 1 });
+            delete_node(ptr);
             ptr = head;
         }
         head = nullptr;

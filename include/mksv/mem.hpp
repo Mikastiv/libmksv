@@ -91,13 +91,6 @@ struct Allocator {
 
     struct {
         void* (*alloc_fn)(void* ctx, const u64 size, const u64 alignment);
-        void* (*resize_fn)(
-            void* ctx,
-            void* ptr,
-            const u64 old_size,
-            const u64 new_size,
-            const u64 alignment
-        );
         void (*free_fn)(
             void* ctx,
             void* ptr,
@@ -112,21 +105,6 @@ struct Allocator {
         return {
             .ptr = vtable.alloc_fn(ctx, len * sizeof(T), alignof(T)),
             .len = len,
-        };
-    }
-
-    template <typename T>
-    Span<T>
-    resize(const Span<T> buf, const u64 new_len) {
-        return {
-            .ptr = vtable.resize_fn(
-                ctx,
-                buf.ptr,
-                buf.len * sizeof(T),
-                new_len * sizeof(T),
-                alignof(T)
-            ),
-            .len = new_len,
         };
     }
 
@@ -148,6 +126,15 @@ constexpr T
 align_up(const T addr, const T alignment) {
     constexpr T mask = alignment - 1;
     return (addr + mask) & ~mask;
+}
+
+template <typename T>
+void
+zero(const Span<T> span) {
+    u8* it = (u8*)span.ptr;
+    for (u64 idx = 0; idx < sizeof(T) * span.len; ++idx) {
+        it[idx] = 0;
+    }
 }
 
 } // namespace mem
