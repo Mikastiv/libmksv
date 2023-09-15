@@ -10,6 +10,8 @@ struct ArrayList {
     mem::Span<T> items;
     u64 cap;
 
+    ArrayList() = delete;
+
     static ArrayList
     init(const mem::Allocator allocator) {
         return {
@@ -20,7 +22,9 @@ struct ArrayList {
     }
 
     bool
-    append(const T item);
+    append(const T& item) {
+        append({ .ptr = &item, .len = 1 });
+    }
 
     bool
     append(const mem::Span<T> range);
