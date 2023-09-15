@@ -1,5 +1,7 @@
 #include "mem.hpp"
 
+#include <string.h>
+
 namespace mem {}
 
 Str

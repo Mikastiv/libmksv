@@ -1,6 +1,5 @@
 #pragma once
 
-#include <stdbool.h>
 #include <stdint.h>
 
 typedef uint8_t u8;
@@ -25,6 +24,7 @@ union Vec2 {
         T x;
         T y;
     };
+
     T e[2];
 };
 
@@ -35,6 +35,7 @@ union Vec3 {
         T y;
         T z;
     };
+
     T e[3];
 };
 
@@ -46,6 +47,7 @@ union Vec4 {
         T z;
         T w;
     };
+
     T e[4];
 };
 

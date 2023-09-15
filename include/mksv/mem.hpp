@@ -1,9 +1,7 @@
 #pragma once
 
+#include "assert.hpp"
 #include "types.hpp"
-
-#include <assert.h>
-#include <string.h>
 
 namespace mem {
 
