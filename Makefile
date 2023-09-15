@@ -13,7 +13,8 @@ OBJS		=	$(SRCS_BASE:%=$(OBJ_DIR)/%.o)
 VPATH		=	$(SRC_DIR) $(DIRS)
 
 CXX			=	clang++
-CXXFLAGS	=	-Wall -Werror -Wextra -Wpedantic -Wfloat-conversion -Wsign-conversion -Wno-gnu-anonymous-struct -fno-rtti -std=c++20
+CXXFLAGS	=	-Wall -Werror -Wextra -Wpedantic -Wfloat-conversion -Wsign-conversion \
+				-Wno-gnu-anonymous-struct -fno-rtti -fno-exceptions -std=c++20
 AR			=	ar rcs
 RM			=	rm -rf
 MKDIR		=	mkdir -p

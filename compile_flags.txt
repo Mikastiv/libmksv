@@ -5,5 +5,7 @@
 -Wsign-conversion
 -Wfloat-conversion
 -Wno-gnu-anonymous-struct
+-fno-exceptions
+-fno-rtti
 -Iinclude/mksv
 -std=c++20
