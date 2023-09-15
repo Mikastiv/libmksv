@@ -4,5 +4,6 @@
 -Wpedantic
 -Wsign-conversion
 -Wfloat-conversion
+-Wno-gnu-anonymous-struct
 -Iinclude/mksv
 -std=c++20
