@@ -6,14 +6,14 @@ namespace mksv {
 
 template <typename T>
 struct ArrayList {
-    mem::Allocator alloc;
+    mem::Allocator allocator;
     mem::Span<T> items;
     u64 cap;
 
     static ArrayList
-    init(const mem::Allocator alloc) {
+    init(const mem::Allocator allocator) {
         return {
-            .alloc = alloc,
+            .allocator = allocator,
             .items = {.ptr = nullptr, .len = 0},
             .cap = 0,
         };
@@ -27,7 +27,10 @@ struct ArrayList {
 
     void
     deinit() {
-        alloc.free(items);
+        allocator.free(items);
+        items.ptr = nullptr;
+        items.len = 0;
+        cap = 0;
     }
 };
 
