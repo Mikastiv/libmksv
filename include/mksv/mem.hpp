@@ -3,6 +3,7 @@
 #include "assert.hpp"
 #include "types.hpp"
 
+namespace mksv {
 namespace mem {
 
 template <typename T>
@@ -27,6 +28,57 @@ struct Span {
             .ptr = ptr + start,
             .len = end - start,
         };
+    }
+};
+
+struct Allocator {
+    void* ctx;
+
+    struct {
+        void* (*alloc_fn)(void* ctx, const u64 size, const u64 alignment);
+        void* (*resize_fn)(
+            void* ctx,
+            void* ptr,
+            const u64 old_size,
+            const u64 new_size,
+            const u64 alignment
+        );
+        void (*free_fn)(
+            void* ctx,
+            void* ptr,
+            const u64 size,
+            const u64 alignment
+        );
+    } vtable;
+
+    template <typename T>
+    Span<T>
+    alloc(const u64 len) {
+        return {
+            .ptr = vtable.alloc_fn(ctx, len * sizeof(T), alignof(T)),
+            .len = len,
+        };
+    }
+
+    template <typename T>
+    Span<T>
+    resize(const Span<T> buf, const u64 new_len) {
+        return {
+            .ptr = vtable.resize_fn(
+                ctx,
+                buf.ptr,
+                buf.len * sizeof(T),
+                new_len * sizeof(T),
+                alignof(T)
+            ),
+            .len = new_len,
+        };
+    }
+
+    template <typename T>
+    void
+    free(const Span<T> buf) {
+        vtable.free_fn(ctx, buf.ptr, buf.len * sizeof(T), alignof(T));
     }
 };
 
@@ -86,8 +138,9 @@ split(const Span<T> span, const Span<T> delimiter) {
 }
 
 } // namespace mem
+} // namespace mksv
 
-typedef mem::Span<u8> Str;
+typedef mksv::mem::Span<u8> Str;
 
 Str
 str(const char* str);
