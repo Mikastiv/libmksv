@@ -69,7 +69,7 @@ struct SplitIter {
 
         index += end - start;
 
-        *value = str_sub(buffer, start, end);
+        *value = sub(buffer, start, end);
 
         return true;
     }
