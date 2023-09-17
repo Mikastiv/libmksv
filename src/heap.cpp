@@ -10,6 +10,7 @@
 namespace mksv {
 namespace heap {
 
+#if OS_WINDOWS
 static struct Win32Ctx {
 } win32_ctx;
 
@@ -58,6 +59,7 @@ win32_free(void* ctx, void* ptr, const u64 size, const u64 alignment) {
 
     VirtualFree(ptr, 0, MEM_RELEASE);
 }
+#endif
 
 mem::Allocator
 system_allocator() {
@@ -148,7 +150,6 @@ ArenaAllocator::deinit() {
         inner_allocator.free(node.data.span);
         ptr = tmp;
     }
-
 }
 
 } // namespace heap
