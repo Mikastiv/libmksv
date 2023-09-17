@@ -2,5 +2,5 @@
 
 #define assert(expr)                                                           \
     if (!(expr)) {                                                             \
-        *(char*)0 = 0;                                                         \
+        *(volatile char*)0 = 0;                                                         \
     }

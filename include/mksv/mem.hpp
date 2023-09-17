@@ -89,7 +89,7 @@ split(const Span<T> span, const Span<T> delimiter) {
 struct Allocator {
     void* ctx;
 
-    struct {
+    struct VTable {
         void* (*alloc_fn)(void* ctx, const u64 size, const u64 alignment);
         bool (*resize_fn)(
             void* ctx,
@@ -105,6 +105,8 @@ struct Allocator {
             const u64 alignment
         );
     } vtable;
+
+    // Allocator() = delete;
 
     template <typename T>
     Span<T>
@@ -143,7 +145,7 @@ align_down(const T addr, const T alignment) {
 template <typename T>
 constexpr T
 align_up(const T addr, const T alignment) {
-    constexpr T mask = alignment - 1;
+    const T mask = alignment - 1;
     return (addr + mask) & ~mask;
 }
 
@@ -153,6 +155,15 @@ zero(const Span<T> span) {
     u8* it = (u8*)span.ptr;
     for (u64 idx = 0; idx < sizeof(T) * span.len; ++idx) {
         it[idx] = 0;
+    }
+}
+
+template <typename T>
+void
+copy(const Span<T> dst, const Span<T> src) {
+    assert(dst.len == src.len);
+    for (u64 idx = 0; idx < dst.len; ++idx) {
+        dst.ptr[idx] = src.ptr[idx];
     }
 }
 
