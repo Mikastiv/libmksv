@@ -41,9 +41,21 @@ struct SinglyLinkedList {
             }
             ptr->next = node->next;
         }
+        node->next = nullptr;
 
         --len;
 
+        return true;
+    }
+
+    bool
+    pop_front(Node* out) {
+        if (head == nullptr) return false;
+
+        const Node* ptr = head;
+        if (!remove_node(head)) return false;
+
+        *out = { .data = ptr->data, .next = nullptr};
         return true;
     }
 };

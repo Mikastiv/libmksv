@@ -21,18 +21,19 @@ struct ArrayList {
     }
 
     bool
-    append(const T& item) {
-        append({ .ptr = &item, .len = 1 });
-    }
-
-    bool
     append(const mem::Span<T> range) {
         if (!ensure_capacity(range.len)) return false;
 
-        mem::copy({.ptr = items.ptr + size, .len = range.len}, range);
+        mem::copy({ .ptr = items.ptr + size, .len = range.len }, range);
         size += range.len;
 
         return true;
+    }
+
+    bool
+    append(T item) {
+        const mem::Span<T> range = { .ptr = &item, .len = 1 };
+        return append(range);
     }
 
     void
@@ -66,7 +67,7 @@ private:
     ensure_capacity(const u64 added_size) {
         if (items.len - size >= added_size) return true;
 
-        u64 new_cap = calculate_new_size(size, added_size);
+        u64 new_cap = calculate_new_size(added_size);
         if (new_cap == items.len) return false;
 
         if (allocator.resize(items, new_cap)) return true;
@@ -74,7 +75,7 @@ private:
         const mem::Span<T> new_items = allocator.alloc<T>(new_cap);
         if (new_items.ptr == nullptr) return false;
 
-        mem::copy(
+        mem::copy<T>(
             { .ptr = new_items.ptr, .len = size },
             { .ptr = items.ptr, .len = size }
         );

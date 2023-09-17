@@ -112,7 +112,7 @@ struct Allocator {
     Span<T>
     alloc(const u64 len) {
         return {
-            .ptr = vtable.alloc_fn(ctx, len * sizeof(T), alignof(T)),
+            .ptr = (T*)vtable.alloc_fn(ctx, len * sizeof(T), alignof(T)),
             .len = len,
         };
     }
