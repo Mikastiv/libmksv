@@ -70,7 +70,10 @@ private:
         u64 new_cap = calculate_new_size(added_size);
         if (new_cap == items.len) return false;
 
-        if (allocator.resize(items, new_cap)) return true;
+        if (allocator.resize(items, new_cap)) {
+            items.len = new_cap;
+            return true;
+        }
 
         const mem::Span<T> new_items = allocator.alloc<T>(new_cap);
         if (new_items.ptr == nullptr) return false;

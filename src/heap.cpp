@@ -83,10 +83,10 @@ static void*
 arena_alloc(void* ctx, const u64 size, const u64 alignment) {
     ArenaAllocator* context = (ArenaAllocator*)ctx;
 
-    const u64 node_size = sizeof(*context->stack.head);
+    const u64 node_size = sizeof(ArenaAllocator::Node);
     const u64 aligned_node_size = mem::align_up(node_size, alignment);
     const u64 aligned_size = mem::align_up(size, alignment);
-    const mem::Span<u8> block =
+    const auto block =
         context->inner_allocator.alloc<u8>(aligned_size + aligned_node_size);
 
     ArenaAllocator::Node* node = (ArenaAllocator::Node*)block.ptr;

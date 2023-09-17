@@ -86,24 +86,28 @@ split(const Span<T> span, const Span<T> delimiter) {
     };
 }
 
+typedef void* (*AllocFn)(void*, const u64, const u64);
+typedef bool (*ResizeFn)(
+    void* ctx,
+    void* ptr,
+    const u64 old_size,
+    const u64 new_size,
+    const u64 alignment
+);
+typedef void (*FreeFn)(
+    void* ctx,
+    void* ptr,
+    const u64 size,
+    const u64 alignment
+);
+
 struct Allocator {
     void* ctx;
 
     struct VTable {
-        void* (*alloc_fn)(void* ctx, const u64 size, const u64 alignment);
-        bool (*resize_fn)(
-            void* ctx,
-            void* ptr,
-            const u64 old_size,
-            const u64 new_size,
-            const u64 alignment
-        );
-        void (*free_fn)(
-            void* ctx,
-            void* ptr,
-            const u64 size,
-            const u64 alignment
-        );
+        AllocFn alloc_fn;
+        ResizeFn resize_fn;
+        FreeFn free_fn;
     } vtable;
 
     // Allocator() = delete;
