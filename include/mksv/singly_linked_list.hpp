@@ -55,7 +55,7 @@ struct SinglyLinkedList {
         const Node* ptr = head;
         if (!remove_node(head)) return false;
 
-        *out = { .data = ptr->data, .next = nullptr};
+        *out = { .data = ptr->data, .next = nullptr };
         return true;
     }
 };

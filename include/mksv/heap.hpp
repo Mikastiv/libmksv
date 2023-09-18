@@ -6,7 +6,8 @@
 namespace mksv {
 namespace heap {
 
-mem::Allocator system_allocator();
+mem::Allocator
+system_allocator();
 
 struct MemoryBlock {
     mem::Span<u8> span;
@@ -18,11 +19,14 @@ struct ArenaAllocator {
 
     typedef SinglyLinkedList<MemoryBlock>::Node Node;
 
-    static ArenaAllocator init(const mem::Allocator inner);
+    static ArenaAllocator
+    init(const mem::Allocator inner);
 
-    mem::Allocator allocator() const;
+    mem::Allocator
+    allocator() const;
 
-    void deinit();
+    void
+    deinit();
 };
 
 } // namespace heap

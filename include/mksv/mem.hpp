@@ -87,19 +87,14 @@ split(const Span<T> span, const Span<T> delimiter) {
 }
 
 typedef void* (*AllocFn)(void*, const u64, const u64);
-typedef bool (*ResizeFn)(
-    void* ctx,
-    void* ptr,
-    const u64 old_size,
-    const u64 new_size,
-    const u64 alignment
-);
-typedef void (*FreeFn)(
-    void* ctx,
-    void* ptr,
-    const u64 size,
-    const u64 alignment
-);
+typedef bool (*ResizeFn
+)(void* ctx,
+  void* ptr,
+  const u64 old_size,
+  const u64 new_size,
+  const u64 alignment);
+typedef void (*FreeFn
+)(void* ctx, void* ptr, const u64 size, const u64 alignment);
 
 struct Allocator {
     void* ctx;

@@ -6,6 +6,9 @@
 #if OS_WINDOWS
 #include <windows.h>
 #endif
+#if OS_MACOS
+#include <sys/mman.h>
+#endif
 
 namespace mksv {
 namespace heap {
@@ -61,6 +64,55 @@ win32_free(void* ctx, void* ptr, const u64 size, const u64 alignment) {
 }
 #endif
 
+#if OS_MACOS
+static struct MacosCtx {
+} macos_ctx;
+
+static constexpr u64
+macos_page_granularity() {
+    return math::kilo_bytes(4);
+}
+
+static void*
+macos_allocate(void* ctx, const u64 size, const u64 alignment) {
+    (void)ctx;
+
+    u64 aligned_size = mem::align_up<u64>(size, macos_page_granularity());
+    aligned_size = mem::align_up<u64>(aligned_size, alignment);
+
+    void* block =
+        mmap(nullptr, aligned_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, 0, 0);
+    if (block == MAP_FAILED) return nullptr;
+
+    return block;
+}
+
+static bool
+macos_resize(
+    void* ctx,
+    void* ptr,
+    const u64 old_size,
+    const u64 new_size,
+    const u64 alignment
+) {
+    (void)ctx;
+    (void)ptr;
+    (void)old_size;
+    (void)new_size;
+    (void)alignment;
+
+    return false;
+}
+
+static void
+macos_free(void* ctx, void* ptr, const u64 size, const u64 alignment) {
+    (void)ctx;
+    (void)alignment;
+
+    munmap(ptr, size);
+}
+#endif
+
 mem::Allocator
 system_allocator() {
 #if OS_WINDOWS
@@ -74,6 +126,14 @@ system_allocator() {
     };
 #elif OS_LINUX
 #elif OS_MACOS
+    return {
+                .ctx = &macos_ctx,
+        .vtable = {
+            .alloc_fn = &macos_allocate,
+            .resize_fn = &macos_resize,
+            .free_fn = &macos_free,
+        },
+    };
 #else
 #error "Unsupported OS"
 #endif
@@ -86,8 +146,10 @@ arena_alloc(void* ctx, const u64 size, const u64 alignment) {
     const u64 node_size = sizeof(ArenaAllocator::Node);
     const u64 aligned_node_size = mem::align_up(node_size, alignment);
     const u64 aligned_size = mem::align_up(size, alignment);
-    const auto block =
+
+    auto block =
         context->inner_allocator.alloc<u8>(aligned_size + aligned_node_size);
+    if (block.ptr == nullptr) return nullptr;
 
     ArenaAllocator::Node* node = (ArenaAllocator::Node*)block.ptr;
     node->data = { .span = block };
