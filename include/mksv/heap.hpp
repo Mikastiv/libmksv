@@ -9,15 +9,14 @@ namespace heap {
 mem::Allocator
 system_allocator();
 
-struct MemoryBlock {
-    mem::Span<u8> span;
-};
-
 struct ArenaAllocator {
-    mem::Allocator inner_allocator;
-    SinglyLinkedList<MemoryBlock> stack;
+    typedef SinglyLinkedList<mem::Span<u8>> Stack;
+    typedef Stack::Node Node;
+    static constexpr u64 NODE_SIZE = sizeof(Node);
 
-    typedef SinglyLinkedList<MemoryBlock>::Node Node;
+    mem::Allocator inner_allocator;
+    Stack stack;
+    u64 end_idx;
 
     static ArenaAllocator
     init(const mem::Allocator inner);

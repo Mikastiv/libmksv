@@ -86,7 +86,7 @@ split(const Span<T> span, const Span<T> delimiter) {
     };
 }
 
-typedef void* (*AllocFn)(void*, const u64, const u64);
+typedef mem::Span<u8> (*AllocFn)(void*, const u64, const u64);
 typedef bool (*ResizeFn
 )(void* ctx,
   void* ptr,
@@ -105,13 +105,13 @@ struct Allocator {
         FreeFn free_fn;
     } vtable;
 
-    // Allocator() = delete;
-
     template <typename T>
     Span<T>
     alloc(const u64 len) {
+        const auto block = vtable.alloc_fn(ctx, len * sizeof(T), alignof(T));
+        if (block.ptr == nullptr) return { .ptr = nullptr, .len = 0 };
         return {
-            .ptr = (T*)vtable.alloc_fn(ctx, len * sizeof(T), alignof(T)),
+            .ptr = (T*)block.ptr,
             .len = len,
         };
     }

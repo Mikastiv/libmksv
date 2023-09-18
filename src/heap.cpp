@@ -13,20 +13,22 @@
 namespace mksv {
 namespace heap {
 
+static constexpr u64
+os_page_granularity() {
+#if OS_WINDOWS | OS_MACOS | OS_LINUX
+    return math::kilo_bytes(4);
+#endif
+}
+
 #if OS_WINDOWS
 static struct Win32Ctx {
 } win32_ctx;
-
-static constexpr u64
-win32_page_granularity() {
-    return math::kilo_bytes(4);
-}
 
 static void*
 win32_allocate(void* ctx, const u64 size, const u64 alignment) {
     (void)ctx;
 
-    u64 aligned_size = mem::align_up<u64>(size, win32_page_granularity());
+    u64 aligned_size = mem::align_up<u64>(size, os_page_granularity());
     aligned_size = mem::align_up<u64>(aligned_size, alignment);
 
     return VirtualAlloc(
@@ -68,23 +70,24 @@ win32_free(void* ctx, void* ptr, const u64 size, const u64 alignment) {
 static struct MacosCtx {
 } macos_ctx;
 
-static constexpr u64
-macos_page_granularity() {
-    return math::kilo_bytes(4);
-}
-
-static void*
+static mem::Span<u8>
 macos_allocate(void* ctx, const u64 size, const u64 alignment) {
     (void)ctx;
 
-    u64 aligned_size = mem::align_up<u64>(size, macos_page_granularity());
+    u64 aligned_size = mem::align_up<u64>(size, os_page_granularity());
     aligned_size = mem::align_up<u64>(aligned_size, alignment);
 
-    void* block =
-        mmap(nullptr, aligned_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, 0, 0);
-    if (block == MAP_FAILED) return nullptr;
+    void* block = mmap(
+        nullptr,
+        aligned_size,
+        PROT_READ | PROT_WRITE,
+        MAP_PRIVATE | MAP_ANON,
+        -1,
+        0
+    );
+    if (block == MAP_FAILED) return { .ptr = nullptr, .len = 0 };
 
-    return block;
+    return { .ptr = (u8*)block, .len = aligned_size };
 }
 
 static bool
@@ -139,23 +142,34 @@ system_allocator() {
 #endif
 }
 
-static void*
+static mem::Span<u8>
 arena_alloc(void* ctx, const u64 size, const u64 alignment) {
     ArenaAllocator* context = (ArenaAllocator*)ctx;
 
-    const u64 node_size = sizeof(ArenaAllocator::Node);
-    const u64 aligned_node_size = mem::align_up(node_size, alignment);
     const u64 aligned_size = mem::align_up(size, alignment);
 
-    auto block =
+    if (context->stack.head) {
+        const auto head = context->stack.head;
+        const u64 size_left = head->data.len - context->end_idx;
+        if (size_left >= aligned_size) {
+            context->end_idx += aligned_size;
+            return { .ptr = head->data.ptr + aligned_size, .len = size };
+        }
+    }
+
+    const u64 aligned_node_size =
+        mem::align_up(ArenaAllocator::NODE_SIZE, alignment);
+
+    const auto block =
         context->inner_allocator.alloc<u8>(aligned_size + aligned_node_size);
-    if (block.ptr == nullptr) return nullptr;
+    if (block.ptr == nullptr) return block;
 
     ArenaAllocator::Node* node = (ArenaAllocator::Node*)block.ptr;
-    node->data = { .span = block };
+    node->data = block;
     context->stack.append_node(node);
+    context->end_idx = aligned_node_size;
 
-    return block.ptr + aligned_node_size;
+    return { .ptr = block.ptr + aligned_node_size, .len = size };
 }
 
 static bool
@@ -187,6 +201,7 @@ ArenaAllocator
 ArenaAllocator::init(const mem::Allocator inner) {
     return {
         .inner_allocator = inner,
+        .end_idx = 0,
     };
 }
 
@@ -209,7 +224,7 @@ ArenaAllocator::deinit() {
         const auto tmp = ptr->next;
         ArenaAllocator::Node node;
         assert(stack.pop_front(&node));
-        inner_allocator.free(node.data.span);
+        inner_allocator.free(node.data);
         ptr = tmp;
     }
 }
