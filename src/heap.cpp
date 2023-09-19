@@ -2,6 +2,7 @@
 
 #include "ctx.hpp"
 #include "math.hpp"
+#include "mem.hpp"
 
 #if OS_WINDOWS
 #include <windows.h>
@@ -24,19 +25,22 @@ os_page_granularity() {
 static struct Win32Ctx {
 } win32_ctx;
 
-static void*
+static mem::Span<u8>
 win32_allocate(void* ctx, const u64 size, const u64 alignment) {
     (void)ctx;
 
     u64 aligned_size = mem::align_up<u64>(size, os_page_granularity());
     aligned_size = mem::align_up<u64>(aligned_size, alignment);
 
-    return VirtualAlloc(
-        0,
-        aligned_size,
-        MEM_COMMIT | MEM_RESERVE,
-        PAGE_READWRITE
-    );
+    void* block =
+        VirtualAlloc(0, aligned_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+
+    if (block == nullptr) return mem::Span<u8>::null();
+
+    return {
+        .ptr = (u8*)block,
+        .len = aligned_size,
+    };
 }
 
 static bool
@@ -85,7 +89,7 @@ macos_allocate(void* ctx, const u64 size, const u64 alignment) {
         -1,
         0
     );
-    if (block == MAP_FAILED) return { .ptr = nullptr, .len = 0 };
+    if (block == MAP_FAILED) return mem::Span<u8>::null();
 
     return { .ptr = (u8*)block, .len = aligned_size };
 }
@@ -152,22 +156,28 @@ arena_alloc(void* ctx, const u64 size, const u64 alignment) {
         const auto head = context->stack.head;
         const u64 size_left = head->data.len - context->end_idx;
         if (size_left >= aligned_size) {
+            const mem::Span<u8> block = {
+                .ptr = head->data.ptr + context->end_idx,
+                .len = size,
+            };
             context->end_idx += aligned_size;
-            return { .ptr = head->data.ptr + aligned_size, .len = size };
+            return block;
         }
     }
 
     const u64 aligned_node_size =
         mem::align_up(ArenaAllocator::NODE_SIZE, alignment);
 
-    const auto block =
-        context->inner_allocator.alloc<u8>(aligned_size + aligned_node_size);
-    if (block.ptr == nullptr) return block;
+    const auto block = context->inner_allocator.raw_alloc(
+        aligned_size + aligned_node_size,
+        alignment
+    );
+    if (block.ptr == nullptr) return mem::Span<u8>::null();
 
     ArenaAllocator::Node* node = (ArenaAllocator::Node*)block.ptr;
     node->data = block;
     context->stack.append_node(node);
-    context->end_idx = aligned_node_size;
+    context->end_idx = aligned_node_size + aligned_size;
 
     return { .ptr = block.ptr + aligned_node_size, .len = size };
 }

@@ -15,7 +15,7 @@ struct ArrayList {
     init(const mem::Allocator allocator) {
         return {
             .allocator = allocator,
-            .items = {.ptr = nullptr, .len = 0},
+            .items = mem::Span<T>::null(),
             .size = 0,
         };
     }
@@ -39,8 +39,7 @@ struct ArrayList {
     void
     deinit() {
         allocator.free(items);
-        items.ptr = nullptr;
-        items.len = 0;
+        items = mem::Span<T>::null();
         size = 0;
     }
 

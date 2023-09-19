@@ -11,6 +11,14 @@ struct Span {
     T* ptr;
     u64 len;
 
+    static constexpr Span
+    null() {
+        return {
+            .ptr = nullptr,
+            .len = 0,
+        };
+    }
+
     constexpr Span
     at(const u64 index) {
         assert(index < len);
@@ -87,14 +95,19 @@ split(const Span<T> span, const Span<T> delimiter) {
 }
 
 typedef mem::Span<u8> (*AllocFn)(void*, const u64, const u64);
-typedef bool (*ResizeFn
-)(void* ctx,
-  void* ptr,
-  const u64 old_size,
-  const u64 new_size,
-  const u64 alignment);
-typedef void (*FreeFn
-)(void* ctx, void* ptr, const u64 size, const u64 alignment);
+typedef bool (*ResizeFn)(
+    void* ctx,
+    void* ptr,
+    const u64 old_size,
+    const u64 new_size,
+    const u64 alignment
+);
+typedef void (*FreeFn)(
+    void* ctx,
+    void* ptr,
+    const u64 size,
+    const u64 alignment
+);
 
 struct Allocator {
     void* ctx;
@@ -109,7 +122,7 @@ struct Allocator {
     Span<T>
     alloc(const u64 len) {
         const auto block = vtable.alloc_fn(ctx, len * sizeof(T), alignof(T));
-        if (block.ptr == nullptr) return { .ptr = nullptr, .len = 0 };
+        if (block.ptr == nullptr) return mem::Span<T>::null();
         return {
             .ptr = (T*)block.ptr,
             .len = len,
@@ -132,6 +145,11 @@ struct Allocator {
     void
     free(const Span<T> buf) {
         vtable.free_fn(ctx, buf.ptr, buf.len * sizeof(T), alignof(T));
+    }
+
+    Span<u8>
+    raw_alloc(const u64 len, const u64 alignment) {
+        return vtable.alloc_fn(ctx, len, alignment);
     }
 };
 
