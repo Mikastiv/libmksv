@@ -25,7 +25,7 @@ os_page_granularity() {
 static struct Win32Ctx {
 } win32_ctx;
 
-static mem::Span<u8>
+static mem::Slice<u8>
 win32_allocate(void* ctx, const u64 size, const u64 alignment) {
     (void)ctx;
 
@@ -35,7 +35,7 @@ win32_allocate(void* ctx, const u64 size, const u64 alignment) {
     void* block =
         VirtualAlloc(0, aligned_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
-    if (block == nullptr) return mem::Span<u8>::null();
+    if (block == nullptr) return mem::Slice<u8>::null();
 
     return {
         .ptr = (u8*)block,
@@ -74,7 +74,7 @@ win32_free(void* ctx, void* ptr, const u64 size, const u64 alignment) {
 static struct MacosCtx {
 } macos_ctx;
 
-static mem::Span<u8>
+static mem::Slice<u8>
 macos_allocate(void* ctx, const u64 size, const u64 alignment) {
     (void)ctx;
 
@@ -89,7 +89,7 @@ macos_allocate(void* ctx, const u64 size, const u64 alignment) {
         -1,
         0
     );
-    if (block == MAP_FAILED) return mem::Span<u8>::null();
+    if (block == MAP_FAILED) return mem::Slice<u8>::null();
 
     return { .ptr = (u8*)block, .len = aligned_size };
 }
@@ -146,7 +146,7 @@ system_allocator() {
 #endif
 }
 
-static mem::Span<u8>
+static mem::Slice<u8>
 arena_alloc(void* ctx, const u64 size, const u64 alignment) {
     ArenaAllocator* context = (ArenaAllocator*)ctx;
 
@@ -156,7 +156,7 @@ arena_alloc(void* ctx, const u64 size, const u64 alignment) {
         const auto head = context->stack.head;
         const u64 size_left = head->data.len - context->end_idx;
         if (size_left >= aligned_size) {
-            const mem::Span<u8> block = {
+            const mem::Slice<u8> block = {
                 .ptr = head->data.ptr + context->end_idx,
                 .len = size,
             };
@@ -172,7 +172,7 @@ arena_alloc(void* ctx, const u64 size, const u64 alignment) {
         aligned_size + aligned_node_size,
         alignment
     );
-    if (block.ptr == nullptr) return mem::Span<u8>::null();
+    if (block.ptr == nullptr) return mem::Slice<u8>::null();
 
     ArenaAllocator::Node* node = (ArenaAllocator::Node*)block.ptr;
     node->data = block;

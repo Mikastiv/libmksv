@@ -10,7 +10,7 @@ mem::Allocator
 system_allocator();
 
 struct ArenaAllocator {
-    typedef SinglyLinkedList<mem::Span<u8>> Stack;
+    typedef SinglyLinkedList<mem::Slice<u8>> Stack;
     typedef Stack::Node Node;
     static constexpr u64 NODE_SIZE = sizeof(Node);
 

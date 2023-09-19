@@ -7,11 +7,11 @@ namespace mksv {
 namespace mem {
 
 template <typename T>
-struct Span {
+struct Slice {
     T* ptr;
     u64 len;
 
-    static constexpr Span
+    static constexpr Slice
     null() {
         return {
             .ptr = nullptr,
@@ -19,7 +19,7 @@ struct Span {
         };
     }
 
-    constexpr Span
+    constexpr Slice
     at(const u64 index) {
         assert(index < len);
         return {
@@ -28,7 +28,7 @@ struct Span {
         };
     }
 
-    constexpr Span
+    constexpr Slice
     sub(const u64 start, const u64 end) {
         assert(end >= start);
         assert(end <= len);
@@ -41,7 +41,7 @@ struct Span {
 
 template <typename T>
 constexpr bool
-equal(const Span<T> a, const Span<T> b) {
+equal(const Slice<T> a, const Slice<T> b) {
     if (a.len != b.len) return false;
     if (a.ptr == b.ptr) return true;
 
@@ -54,8 +54,8 @@ equal(const Span<T> a, const Span<T> b) {
 
 template <typename T>
 struct SplitIter {
-    Span<T> buffer;
-    Span<T> delimiter;
+    Slice<T> buffer;
+    Slice<T> delimiter;
     u64 index;
 
     constexpr bool
@@ -65,7 +65,7 @@ struct SplitIter {
     }
 
     constexpr bool
-    next(Span<T>* value) {
+    next(Slice<T>* value) {
         while (index < buffer.len && is_delimiter(index)) {
             index += delimiter.len;
         }
@@ -86,28 +86,23 @@ struct SplitIter {
 
 template <typename T>
 SplitIter<T>
-split(const Span<T> span, const Span<T> delimiter) {
+split(const Slice<T> slice, const Slice<T> delimiter) {
     return {
-        .buffer = span,
+        .buffer = slice,
         .delimiter = delimiter,
         .index = 0,
     };
 }
 
-typedef mem::Span<u8> (*AllocFn)(void*, const u64, const u64);
-typedef bool (*ResizeFn)(
-    void* ctx,
-    void* ptr,
-    const u64 old_size,
-    const u64 new_size,
-    const u64 alignment
-);
-typedef void (*FreeFn)(
-    void* ctx,
-    void* ptr,
-    const u64 size,
-    const u64 alignment
-);
+typedef mem::Slice<u8> (*AllocFn)(void*, const u64, const u64);
+typedef bool (*ResizeFn
+)(void* ctx,
+  void* ptr,
+  const u64 old_size,
+  const u64 new_size,
+  const u64 alignment);
+typedef void (*FreeFn
+)(void* ctx, void* ptr, const u64 size, const u64 alignment);
 
 struct Allocator {
     void* ctx;
@@ -119,10 +114,10 @@ struct Allocator {
     } vtable;
 
     template <typename T>
-    Span<T>
+    Slice<T>
     alloc(const u64 len) {
         const auto block = vtable.alloc_fn(ctx, len * sizeof(T), alignof(T));
-        if (block.ptr == nullptr) return mem::Span<T>::null();
+        if (block.ptr == nullptr) return mem::Slice<T>::null();
         return {
             .ptr = (T*)block.ptr,
             .len = len,
@@ -131,7 +126,7 @@ struct Allocator {
 
     template <typename T>
     bool
-    resize(const Span<T> buf, const u64 new_len) {
+    resize(const Slice<T> buf, const u64 new_len) {
         return vtable.resize_fn(
             ctx,
             buf.ptr,
@@ -143,11 +138,11 @@ struct Allocator {
 
     template <typename T>
     void
-    free(const Span<T> buf) {
+    free(const Slice<T> buf) {
         vtable.free_fn(ctx, buf.ptr, buf.len * sizeof(T), alignof(T));
     }
 
-    Span<u8>
+    Slice<u8>
     raw_alloc(const u64 len, const u64 alignment) {
         return vtable.alloc_fn(ctx, len, alignment);
     }
@@ -168,16 +163,16 @@ align_up(const T addr, const T alignment) {
 
 template <typename T>
 void
-zero(const Span<T> span) {
-    u8* it = (u8*)span.ptr;
-    for (u64 idx = 0; idx < sizeof(T) * span.len; ++idx) {
+zero(const Slice<T> slice) {
+    u8* it = (u8*)slice.ptr;
+    for (u64 idx = 0; idx < sizeof(T) * slice.len; ++idx) {
         it[idx] = 0;
     }
 }
 
 template <typename T>
 void
-copy(const Span<T> dst, const Span<T> src) {
+copy(const Slice<T> dst, const Slice<T> src) {
     assert(dst.len == src.len);
     for (u64 idx = 0; idx < dst.len; ++idx) {
         dst.ptr[idx] = src.ptr[idx];
@@ -187,7 +182,7 @@ copy(const Span<T> dst, const Span<T> src) {
 } // namespace mem
 } // namespace mksv
 
-typedef mksv::mem::Span<u8> Str;
+typedef mksv::mem::Slice<u8> Str;
 
 Str
 str(const char* str);

@@ -8,20 +8,20 @@ namespace mksv {
 template <typename T>
 struct ArrayList {
     mem::Allocator allocator;
-    mem::Span<T> items;
+    mem::Slice<T> items;
     u64 size;
 
     static ArrayList
     init(const mem::Allocator allocator) {
         return {
             .allocator = allocator,
-            .items = mem::Span<T>::null(),
+            .items = mem::Slice<T>::null(),
             .size = 0,
         };
     }
 
     bool
-    append(const mem::Span<T> range) {
+    append(const mem::Slice<T> range) {
         if (!ensure_capacity(range.len)) return false;
 
         mem::copy({ .ptr = items.ptr + size, .len = range.len }, range);
@@ -32,14 +32,14 @@ struct ArrayList {
 
     bool
     append(T item) {
-        const mem::Span<T> range = { .ptr = &item, .len = 1 };
+        const mem::Slice<T> range = { .ptr = &item, .len = 1 };
         return append(range);
     }
 
     void
     deinit() {
         allocator.free(items);
-        items = mem::Span<T>::null();
+        items = mem::Slice<T>::null();
         size = 0;
     }
 
@@ -74,7 +74,7 @@ private:
             return true;
         }
 
-        const mem::Span<T> new_items = allocator.alloc<T>(new_cap);
+        const mem::Slice<T> new_items = allocator.alloc<T>(new_cap);
         if (new_items.ptr == nullptr) return false;
 
         mem::copy<T>(
