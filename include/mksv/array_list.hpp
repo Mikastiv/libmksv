@@ -77,10 +77,7 @@ private:
         mem::Slice<T> new_items = {};
         if (!allocator.alloc<T>(new_cap, &new_items)) return false;
 
-        mem::copy<T>(
-            { .ptr = new_items.ptr, .len = size },
-            { .ptr = items.ptr, .len = size }
-        );
+        mem::copy<T>({ .ptr = new_items.ptr, .len = size }, { .ptr = items.ptr, .len = size });
 
         allocator.free(items);
         items = new_items;

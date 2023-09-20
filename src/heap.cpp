@@ -25,20 +25,14 @@ static struct OsCtx {
 } os_ctx;
 
 static bool
-os_allocate(
-    void* ctx,
-    const u64 size,
-    const u64 alignment,
-    mem::Slice<u8>* out_block
-) {
+os_allocate(void* ctx, const u64 size, const u64 alignment, mem::Slice<u8>* out_block) {
     (void)ctx;
 
 #if OS_WINDOWS
     u64 aligned_size = mem::align_up<u64>(size, os_page_granularity());
     aligned_size = mem::align_up<u64>(aligned_size, alignment);
 
-    void* block =
-        VirtualAlloc(0, aligned_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+    void* block = VirtualAlloc(0, aligned_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
     if (block == nullptr) return false;
 
     *out_block = { .ptr = (u8*)block, .len = aligned_size };
@@ -47,14 +41,8 @@ os_allocate(
     u64 aligned_size = mem::align_up<u64>(size, os_page_granularity());
     aligned_size = mem::align_up<u64>(aligned_size, alignment);
 
-    void* block = mmap(
-        nullptr,
-        aligned_size,
-        PROT_READ | PROT_WRITE,
-        MAP_PRIVATE | MAP_ANON,
-        -1,
-        0
-    );
+    void* block =
+        mmap(nullptr, aligned_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
     if (block == MAP_FAILED) return false;
 
     *out_block = { .ptr = (u8*)block, .len = aligned_size };
@@ -65,13 +53,7 @@ os_allocate(
 }
 
 static bool
-os_resize(
-    void* ctx,
-    void* ptr,
-    const u64 old_size,
-    const u64 new_size,
-    const u64 alignment
-) {
+os_resize(void* ctx, void* ptr, const u64 old_size, const u64 new_size, const u64 alignment) {
     (void)ctx;
     (void)ptr;
     (void)old_size;
@@ -108,12 +90,7 @@ system_allocator() {
 }
 
 static bool
-arena_alloc(
-    void* ctx,
-    const u64 size,
-    const u64 alignment,
-    mem::Slice<u8>* out_block
-) {
+arena_alloc(void* ctx, const u64 size, const u64 alignment, mem::Slice<u8>* out_block) {
     ArenaAllocator* context = (ArenaAllocator*)ctx;
 
     const u64 aligned_size = mem::align_up(size, alignment);
@@ -131,12 +108,10 @@ arena_alloc(
         }
     }
 
-    const u64 aligned_node_size =
-        mem::align_up(ArenaAllocator::NODE_SIZE, alignment);
+    const u64 aligned_node_size = mem::align_up(ArenaAllocator::NODE_SIZE, alignment);
 
     mem::Slice<u8> block = {};
-    if (!context->inner_allocator
-             .raw_alloc(aligned_size + aligned_node_size, alignment, &block))
+    if (!context->inner_allocator.raw_alloc(aligned_size + aligned_node_size, alignment, &block))
         return false;
 
     ArenaAllocator::Node* node = (ArenaAllocator::Node*)block.ptr;
@@ -149,13 +124,7 @@ arena_alloc(
 }
 
 static bool
-arena_resize(
-    void* ctx,
-    void* ptr,
-    const u64 old_size,
-    const u64 new_size,
-    const u64 alignment
-) {
+arena_resize(void* ctx, void* ptr, const u64 old_size, const u64 new_size, const u64 alignment) {
     ArenaAllocator* context = (ArenaAllocator*)ctx;
     (void)context;
     (void)ptr;

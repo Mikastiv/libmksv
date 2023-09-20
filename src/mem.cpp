@@ -4,6 +4,7 @@
 
 namespace mem {}
 
+// TODO: Remove strlen with own implementation
 Str
 str(const char* str) {
     return {

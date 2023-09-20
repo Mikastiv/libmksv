@@ -9,10 +9,10 @@
 #endif
 
 #if OS_MACOS
-#include <unistd.h>
-#include <sys/syslimits.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <sys/syslimits.h>
+#include <unistd.h>
 #endif
 
 namespace mksv {
@@ -44,13 +44,7 @@ read_file(mem::Allocator allocator, const Str filename, Str* out_str) {
 
     DWORD bytes_read = 0;
     const DWORD size32 = filesize.QuadPart;
-    BOOL success = ReadFile(
-        handle,
-        (LPVOID)file_content.ptr,
-        size32,
-        &bytes_read,
-        nullptr
-    );
+    BOOL success = ReadFile(handle, (LPVOID)file_content.ptr, size32, &bytes_read, nullptr);
     if (!success || bytes_read != size32) {
         allocator.free(file_content);
         return false;
@@ -61,7 +55,7 @@ read_file(mem::Allocator allocator, const Str filename, Str* out_str) {
     return true;
 #elif OS_MACOS
     char c_str[PATH_MAX] = {};
-    mem::copy({.ptr = (u8*)c_str, .len = filename.len}, filename);
+    mem::copy({ .ptr = (u8*)c_str, .len = filename.len }, filename);
 
     const int fd = open(c_str, O_RDONLY);
     if (fd < 0) return false;
@@ -108,14 +102,13 @@ write_file(const Str filename, const Str buffer) {
 
     DWORD bytes_written = 0;
     const DWORD size32 = buffer.len;
-    BOOL success =
-        WriteFile(handle, (LPCVOID)buffer.ptr, size32, &bytes_written, nullptr);
+    BOOL success = WriteFile(handle, (LPCVOID)buffer.ptr, size32, &bytes_written, nullptr);
     if (!success || bytes_written != size32) return false;
 
     return true;
 #elif OS_MACOS
     char c_str[PATH_MAX] = {};
-    mem::copy({.ptr = (u8*)c_str, .len = filename.len}, filename);
+    mem::copy({ .ptr = (u8*)c_str, .len = filename.len }, filename);
 
     const int fd = open(c_str, O_WRONLY | O_CREAT | O_TRUNC, 0666);
     if (fd < 0) return false;
