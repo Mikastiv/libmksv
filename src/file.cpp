@@ -10,6 +10,9 @@
 
 #if OS_MACOS
 #include <unistd.h>
+#include <sys/syslimits.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 #endif
 
 namespace mksv {
@@ -57,9 +60,31 @@ read_file(mem::Allocator allocator, const Str filename, Str* out_str) {
 
     return true;
 #elif OS_MACOS
-    (void)filename;
-    (void)out_str;
-    return false;
+    char c_str[PATH_MAX] = {};
+    mem::copy({.ptr = (u8*)c_str, .len = filename.len}, filename);
+
+    const int fd = open(c_str, O_RDONLY);
+    if (fd < 0) return false;
+    defer(close(fd));
+
+    struct stat file_stat;
+    if (fstat(fd, &file_stat) < 0) return false;
+
+    Str file_content = {};
+    if (!allocator.alloc((u64)file_stat.st_size, &file_content)) return false;
+
+    const ssize_t bytes_read = read(fd, file_content.ptr, file_content.len);
+    if (bytes_read < 0) {
+        allocator.free(file_content);
+        return false;
+    }
+
+    *out_str = file_content;
+
+    return true;
+#elif OS_LINUX
+#else
+#error "Unsupported OS"
 #endif
 }
 
@@ -88,6 +113,21 @@ write_file(const Str filename, const Str buffer) {
     if (!success || bytes_written != size32) return false;
 
     return true;
+#elif OS_MACOS
+    char c_str[PATH_MAX] = {};
+    mem::copy({.ptr = (u8*)c_str, .len = filename.len}, filename);
+
+    const int fd = open(c_str, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+    if (fd < 0) return false;
+    defer(close(fd));
+
+    const ssize_t bytes_written = write(fd, (void*)buffer.ptr, buffer.len);
+    if (bytes_written < 0 || bytes_written != (ssize_t)buffer.len) return false;
+
+    return true;
+#elif OS_LINUX
+#else
+#error "Unsupported OS"
 #endif
 }
 
