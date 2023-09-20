@@ -124,5 +124,32 @@ write_file(const Str filename, const Str buffer) {
 #endif
 }
 
+[[nodiscard]] bool
+write_stdout(const Str buffer) {
+#if OS_WINDOWS
+#elif OS_MACOS
+    const ssize_t bytes_written = write(STDOUT_FILENO, (void*)buffer.ptr, buffer.len);
+    if (bytes_written < 0 || bytes_written != (ssize_t)buffer.len) return false;
+
+    return true;
+#elif OS_LINUX
+#else
+#error "Unsupported OS"
+#endif
+}
+
+[[nodiscard]] bool
+write_stderr(const Str buffer) {
+#if OS_WINDOWS
+#elif OS_MACOS
+    const ssize_t bytes_written = write(STDERR_FILENO, (void*)buffer.ptr, buffer.len);
+    if (bytes_written < 0 || bytes_written != (ssize_t)buffer.len) return false;
+
+    return true;
+#elif OS_LINUX
+#else
+#error "Unsupported OS"
+#endif
+}
 } // namespace io
 } // namespace mksv

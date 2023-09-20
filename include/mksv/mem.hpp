@@ -53,7 +53,7 @@ struct SplitIter {
     constexpr bool
     is_delimiter(const u64 index) {
         if (index + delimiter.len > buffer.len) return false;
-        return equal(sub(buffer, index, index + delimiter.len), delimiter);
+        return equal(buffer.sub(index, index + delimiter.len), delimiter);
     }
 
     constexpr bool
@@ -70,7 +70,7 @@ struct SplitIter {
 
         index += end - start;
 
-        *value = sub(buffer, start, end);
+        *value = buffer.sub(start, end);
 
         return true;
     }
