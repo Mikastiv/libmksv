@@ -41,7 +41,7 @@ read_file(mem::Allocator allocator, const Str filename, Str* out_str) {
 
     DWORD bytes_read = 0;
     const DWORD size32 = filesize.QuadPart;
-    bool success = ReadFile(
+    BOOL success = ReadFile(
         handle,
         (LPVOID)file_content.ptr,
         size32,
@@ -60,6 +60,34 @@ read_file(mem::Allocator allocator, const Str filename, Str* out_str) {
     (void)filename;
     (void)out_str;
     return false;
+#endif
+}
+
+bool
+write_file(const Str filename, const Str buffer) {
+#if OS_WINDOWS
+    char c_str[MAX_PATH] = {};
+    mem::copy({ .ptr = (u8*)c_str, .len = filename.len }, filename);
+
+    HANDLE handle = CreateFileA(
+        c_str,
+        FILE_GENERIC_WRITE,
+        0,
+        nullptr,
+        CREATE_ALWAYS,
+        FILE_ATTRIBUTE_NORMAL,
+        nullptr
+    );
+    if (handle == INVALID_HANDLE_VALUE) return false;
+    defer(CloseHandle(handle));
+
+    DWORD bytes_written = 0;
+    const DWORD size32 = buffer.len;
+    BOOL success =
+        WriteFile(handle, (LPCVOID)buffer.ptr, size32, &bytes_written, nullptr);
+    if (!success || bytes_written != size32) return false;
+
+    return true;
 #endif
 }
 
