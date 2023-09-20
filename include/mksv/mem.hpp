@@ -132,6 +132,7 @@ struct Allocator {
     }
 };
 
+// TODO: check alignment is power of 2
 template <typename T>
 constexpr T
 align_down(const T addr, const T alignment) {

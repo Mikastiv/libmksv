@@ -32,7 +32,7 @@ os_allocate(void* ctx, const u64 size, const u64 alignment, mem::Slice<u8>* out_
     u64 aligned_size = mem::align_up<u64>(size, os_page_granularity());
     aligned_size = mem::align_up<u64>(aligned_size, alignment);
 
-    void* block = VirtualAlloc(0, aligned_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+    void* block = VirtualAlloc(nullptr, aligned_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
     if (block == nullptr) return false;
 
     *out_block = { .ptr = (u8*)block, .len = aligned_size };
