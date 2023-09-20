@@ -94,15 +94,20 @@ split(const Slice<T> slice, const Slice<T> delimiter) {
     };
 }
 
-typedef mem::Slice<u8> (*AllocFn)(void*, const u64, const u64);
-typedef bool (*ResizeFn
-)(void* ctx,
-  void* ptr,
-  const u64 old_size,
-  const u64 new_size,
-  const u64 alignment);
-typedef void (*FreeFn
-)(void* ctx, void* ptr, const u64 size, const u64 alignment);
+typedef bool (*AllocFn)(void*, const u64, const u64, Slice<u8>* out_block);
+typedef bool (*ResizeFn)(
+    void* ctx,
+    void* ptr,
+    const u64 old_size,
+    const u64 new_size,
+    const u64 alignment
+);
+typedef void (*FreeFn)(
+    void* ctx,
+    void* ptr,
+    const u64 size,
+    const u64 alignment
+);
 
 struct Allocator {
     void* ctx;
@@ -114,18 +119,20 @@ struct Allocator {
     } vtable;
 
     template <typename T>
-    Slice<T>
-    alloc(const u64 len) {
-        const auto block = vtable.alloc_fn(ctx, len * sizeof(T), alignof(T));
-        if (block.ptr == nullptr) return mem::Slice<T>::null();
-        return {
+    [[nodiscard]] bool
+    alloc(const u64 len, Slice<T>* out_block) {
+        auto block = Slice<u8>::null();
+        if (!vtable.alloc_fn(ctx, len * sizeof(T), alignof(T), &block))
+            return false;
+        *out_block = {
             .ptr = (T*)block.ptr,
             .len = len,
         };
+        return true;
     }
 
     template <typename T>
-    bool
+    [[nodiscard]] bool
     resize(const Slice<T> buf, const u64 new_len) {
         return vtable.resize_fn(
             ctx,
@@ -142,9 +149,9 @@ struct Allocator {
         vtable.free_fn(ctx, buf.ptr, buf.len * sizeof(T), alignof(T));
     }
 
-    Slice<u8>
-    raw_alloc(const u64 len, const u64 alignment) {
-        return vtable.alloc_fn(ctx, len, alignment);
+    [[nodiscard]] bool
+    raw_alloc(const u64 len, const u64 alignment, Slice<u8>* out_block) {
+        return vtable.alloc_fn(ctx, len, alignment, out_block);
     }
 };
 

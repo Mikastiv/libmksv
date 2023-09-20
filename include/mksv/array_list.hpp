@@ -20,7 +20,7 @@ struct ArrayList {
         };
     }
 
-    bool
+    [[nodiscard]] bool
     append(const mem::Slice<T> range) {
         if (!ensure_capacity(range.len)) return false;
 
@@ -30,7 +30,7 @@ struct ArrayList {
         return true;
     }
 
-    bool
+    [[nodiscard]] bool
     append(T item) {
         const mem::Slice<T> range = { .ptr = &item, .len = 1 };
         return append(range);
@@ -74,8 +74,8 @@ private:
             return true;
         }
 
-        const mem::Slice<T> new_items = allocator.alloc<T>(new_cap);
-        if (new_items.ptr == nullptr) return false;
+        auto new_items = mem::Slice<T>::null();
+        if (!allocator.alloc<T>(new_cap, &new_items)) return false;
 
         mem::copy<T>(
             { .ptr = new_items.ptr, .len = size },
