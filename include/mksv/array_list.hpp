@@ -15,7 +15,7 @@ struct ArrayList {
     init(const mem::Allocator allocator) {
         return {
             .allocator = allocator,
-            .items = mem::Slice<T>::null(),
+            .items = {},
             .size = 0,
         };
     }
@@ -39,7 +39,7 @@ struct ArrayList {
     void
     deinit() {
         allocator.free(items);
-        items = mem::Slice<T>::null();
+        items = {};
         size = 0;
     }
 
@@ -74,7 +74,7 @@ private:
             return true;
         }
 
-        auto new_items = mem::Slice<T>::null();
+        mem::Slice<T> new_items = {};
         if (!allocator.alloc<T>(new_cap, &new_items)) return false;
 
         mem::copy<T>(

@@ -134,7 +134,7 @@ arena_alloc(
     const u64 aligned_node_size =
         mem::align_up(ArenaAllocator::NODE_SIZE, alignment);
 
-    auto block = mem::Slice<u8>::null();
+    mem::Slice<u8> block = {};
     if (!context->inner_allocator
              .raw_alloc(aligned_size + aligned_node_size, alignment, &block))
         return false;

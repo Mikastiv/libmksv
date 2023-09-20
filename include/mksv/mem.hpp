@@ -11,14 +11,6 @@ struct Slice {
     T* ptr;
     u64 len;
 
-    static constexpr Slice
-    null() {
-        return {
-            .ptr = nullptr,
-            .len = 0,
-        };
-    }
-
     constexpr Slice
     at(const u64 index) {
         assert(index < len);
@@ -121,13 +113,15 @@ struct Allocator {
     template <typename T>
     [[nodiscard]] bool
     alloc(const u64 len, Slice<T>* out_block) {
-        auto block = Slice<u8>::null();
+        Slice<u8> block = {};
         if (!vtable.alloc_fn(ctx, len * sizeof(T), alignof(T), &block))
             return false;
+
         *out_block = {
             .ptr = (T*)block.ptr,
             .len = len,
         };
+
         return true;
     }
 
