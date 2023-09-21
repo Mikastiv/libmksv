@@ -8,10 +8,10 @@ namespace fmt {
 static u64
 parse_digits(const Str str, u64* idx) {
     u64 number = 0;
-    while (is_digit(str.ptr[*idx])) {
+    while (*idx < str.len && is_digit(str.ptr[*idx])) {
         number *= 10;
         number += str.ptr[*idx] - '0';
-        (*idx)++;
+        ++(*idx);
     }
     return number;
 }
@@ -23,9 +23,16 @@ convert_float(const Str str, T* out) {
 
     u64 idx = 0;
     const bool negative = str.ptr[idx] == '-';
-    if (str.ptr[idx] == '-' || str.ptr[idx] == '+') idx++;
+    if (str.ptr[idx] == '-' || str.ptr[idx] == '+') ++idx;
 
-    u64 integer = parse_digits(str, &idx);
+    const u64 integer_start = idx;
+    const u64 integer = parse_digits(str, &idx);
+    const u64 integer_len = idx - integer_start;
+
+    if (idx < str.len && str.ptr[idx] == '.') ++idx;
+    const u64 decimal_start = idx;
+    const u64 decimal = parse_digits(str, &idx);
+    const u64 decimal_len = idx - decimal_start;
 
     return false;
 }
