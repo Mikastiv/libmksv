@@ -147,7 +147,7 @@ align_up(const T addr, const T alignment) {
 }
 
 template <typename T>
-void
+constexpr void
 zero(const Slice<T> slice) {
     u8* it = (u8*)slice.ptr;
     for (u64 idx = 0; idx < sizeof(T) * slice.len; ++idx) {
@@ -156,7 +156,7 @@ zero(const Slice<T> slice) {
 }
 
 template <typename T>
-void
+constexpr void
 copy(const Slice<T> dst, const Slice<T> src) {
     assert(dst.len == src.len);
     for (u64 idx = 0; idx < dst.len; ++idx) {
@@ -164,10 +164,43 @@ copy(const Slice<T> dst, const Slice<T> src) {
     }
 }
 
+template <typename T>
+[[nodiscard]] constexpr bool
+find(const Slice<T> haystack, const Slice<T> needle, u64* out_idx) {
+    if (needle.len > haystack.len) return false;
+    if (haystack.len == 0 || needle.len == 0) return false;
+    if (equal(haystack, needle)) {
+        *out_idx = 0;
+        return true;
+    }
+
+    for (u64 idx = 0; idx < haystack.len - needle.len; ++idx) {
+        if (equal({ .ptr = haystack.ptr + idx, .len = needle.len }, needle)) {
+            *out_idx = idx;
+            return true;
+        }
+    }
+
+    return false;
+}
+
 } // namespace mem
 } // namespace mksv
 
 using Str = mksv::mem::Slice<u8>;
 
-Str
-str(const char* str);
+constexpr u64
+str_len(const char* str) {
+    u64 len = 0;
+    while (str[len])
+        len++;
+    return len;
+}
+
+constexpr Str
+str(const char* str) {
+    return {
+        .ptr = (u8*)str,
+        .len = str_len(str),
+    };
+}

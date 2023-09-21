@@ -24,7 +24,7 @@ read_file(mem::Allocator allocator, const Str filename, Str* out_str) {
     char c_str[MAX_PATH] = {};
     mem::copy({ .ptr = (u8*)c_str, .len = filename.len }, filename);
 
-    HANDLE handle = CreateFileA(
+    const HANDLE handle = CreateFileA(
         c_str,
         FILE_GENERIC_READ,
         FILE_SHARE_READ,
@@ -88,7 +88,7 @@ write_file(const Str filename, const Str buffer) {
     char c_str[MAX_PATH] = {};
     mem::copy({ .ptr = (u8*)c_str, .len = filename.len }, filename);
 
-    HANDLE handle = CreateFileA(
+    const HANDLE handle = CreateFileA(
         c_str,
         FILE_GENERIC_WRITE,
         0,
@@ -127,6 +127,15 @@ write_file(const Str filename, const Str buffer) {
 [[nodiscard]] bool
 write_stdout(const Str buffer) {
 #if OS_WINDOWS
+    const HANDLE stdout = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (stdout == INVALID_HANDLE_VALUE) return false;
+
+    DWORD bytes_written = 0;
+    const DWORD size32 = buffer.len;
+    BOOL success = WriteFile(stdout, (LPCVOID)buffer.ptr, size32, &bytes_written, nullptr);
+    if (!success || bytes_written != size32) return false;
+
+    return true;
 #elif OS_MACOS
     const ssize_t bytes_written = write(STDOUT_FILENO, (void*)buffer.ptr, buffer.len);
     if (bytes_written < 0 || bytes_written != (ssize_t)buffer.len) return false;
@@ -141,6 +150,15 @@ write_stdout(const Str buffer) {
 [[nodiscard]] bool
 write_stderr(const Str buffer) {
 #if OS_WINDOWS
+    const HANDLE stderr = GetStdHandle(STD_ERROR_HANDLE);
+    if (stderr == INVALID_HANDLE_VALUE) return false;
+
+    DWORD bytes_written = 0;
+    const DWORD size32 = buffer.len;
+    BOOL success = WriteFile(stderr, (LPCVOID)buffer.ptr, size32, &bytes_written, nullptr);
+    if (!success || bytes_written != size32) return false;
+
+    return true;
 #elif OS_MACOS
     const ssize_t bytes_written = write(STDERR_FILENO, (void*)buffer.ptr, buffer.len);
     if (bytes_written < 0 || bytes_written != (ssize_t)buffer.len) return false;
