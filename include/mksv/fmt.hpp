@@ -15,6 +15,38 @@ parse_float(const Str str, f32* out);
 [[nodiscard]] bool
 parse_float(const Str str, f64* out);
 
+// Integer parsing. Only accepts base 10
+[[nodiscard]] bool
+parse_int(const Str str, u8* out);
+
+// Integer parsing. Only accepts base 10
+[[nodiscard]] bool
+parse_int(const Str str, u16* out);
+
+// Integer parsing. Only accepts base 10
+[[nodiscard]] bool
+parse_int(const Str str, u32* out);
+
+// Integer parsing. Only accepts base 10
+[[nodiscard]] bool
+parse_int(const Str str, u64* out);
+
+// Integer parsing. Only accepts base 10
+[[nodiscard]] bool
+parse_int(const Str str, i8* out);
+
+// Integer parsing. Only accepts base 10
+[[nodiscard]] bool
+parse_int(const Str str, i16* out);
+
+// Integer parsing. Only accepts base 10
+[[nodiscard]] bool
+parse_int(const Str str, i32* out);
+
+// Integer parsing. Only accepts base 10
+[[nodiscard]] bool
+parse_int(const Str str, i64* out);
+
 } // namespace fmt
 
 } // namespace mksv
