@@ -11,10 +11,10 @@ read_file(mem::Allocator allocator, const Str filename, Str* out_str);
 [[nodiscard]] bool
 write_file(const Str filename, const Str buffer);
 
-[[nodiscard]] bool
+bool
 write_stdout(const Str buffer);
 
-[[nodiscard]] bool
+bool
 write_stderr(const Str buffer);
 
 } // namespace io

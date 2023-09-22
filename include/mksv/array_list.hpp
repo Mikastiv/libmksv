@@ -11,7 +11,7 @@ struct ArrayList {
     mem::Slice<T> items;
     u64 size;
 
-    static ArrayList
+    [[nodiscard]] static ArrayList
     init(const mem::Allocator allocator) {
         return {
             .allocator = allocator,
@@ -34,6 +34,14 @@ struct ArrayList {
     append(T item) {
         const mem::Slice<T> range = { .ptr = &item, .len = 1 };
         return append(range);
+    }
+
+    mem::Slice<T>
+    slice() const {
+        return {
+            .ptr = items.ptr,
+            .len = size,
+        };
     }
 
     void
