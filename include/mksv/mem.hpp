@@ -4,7 +4,6 @@
 #include "math.hpp"
 #include "types.hpp"
 
-
 namespace mksv {
 namespace mem {
 
@@ -138,7 +137,7 @@ struct Allocator {
 
     template <typename T>
     [[nodiscard]] bool
-    alloc(const u64 len, Slice<T>* out_block) {
+    alloc(const u64 len, Slice<T>* out_block) const {
         Slice<u8> block = {};
         if (!vtable.alloc_fn(ctx, len * sizeof(T), alignof(T), &block)) return false;
 
@@ -152,18 +151,18 @@ struct Allocator {
 
     template <typename T>
     [[nodiscard]] bool
-    resize(const Slice<T> buf, const u64 new_len) {
+    resize(const Slice<T> buf, const u64 new_len) const {
         return vtable.resize_fn(ctx, buf.ptr, buf.len * sizeof(T), new_len * sizeof(T), alignof(T));
     }
 
     template <typename T>
     void
-    free(const Slice<T> buf) {
+    free(const Slice<T> buf) const {
         vtable.free_fn(ctx, buf.ptr, buf.len * sizeof(T), alignof(T));
     }
 
     [[nodiscard]] bool
-    raw_alloc(const u64 len, const u64 alignment, Slice<u8>* out_block) {
+    raw_alloc(const u64 len, const u64 alignment, Slice<u8>* out_block) const {
         return vtable.alloc_fn(ctx, len, alignment, out_block);
     }
 };
@@ -201,6 +200,15 @@ copy(const Slice<T> dst, const Slice<T> src) {
 }
 
 template <typename T>
+bool
+join(const Allocator allocator, Slice<T>* dst, const Slice<T> a, const Slice<T> b) {
+    if (!allocator.alloc(a.len + b.len, dst)) return false;
+    copy({ .ptr = dst->ptr, .len = a.len }, a);
+    copy({ .ptr = dst->ptr + a.len, .len = b.len }, b);
+    return true;
+}
+
+template <typename T>
 [[nodiscard]] constexpr bool
 find(const Slice<T> haystack, const Slice<T> needle, u64* out_idx) {
     if (needle.len > haystack.len) return false;
@@ -232,7 +240,7 @@ str_len(const char* str) {
     return len;
 }
 
-constexpr Str
+inline Str
 str(const char* str) {
     return {
         .ptr = (u8*)str,

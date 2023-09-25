@@ -62,6 +62,8 @@ convert_float(const Str str, T* out) {
     float_number /= pow10_table[exponent];
     if (negative) float_number = -float_number;
 
+    if (idx != str.len) return false;
+
     *out = float_number;
 
     return true;
@@ -88,6 +90,7 @@ convert_uint(const Str str, const T base, T* out) {
     if (str.ptr[idx] == '+') ++idx;
 
     const u64 number = parse_digits(str, &idx, base);
+    if (idx != str.len) return false;
     *out = (T)number;
 
     return true;
@@ -109,6 +112,7 @@ convert_int(const Str str, const T base, T* out) {
         ++idx;
     }
 
+    if (idx != str.len) return false;
     *out = number;
 
     return true;
