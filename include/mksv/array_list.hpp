@@ -64,6 +64,11 @@ struct ArrayList {
         return items.ptr + size;
     }
 
+    T*
+    last() {
+        return items.ptr + size - 1;
+    }
+
     void
     deinit() {
         allocator.free(items);
