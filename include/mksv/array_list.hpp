@@ -44,6 +44,26 @@ struct ArrayList {
         };
     }
 
+    T*
+    begin() {
+        return items.ptr;
+    }
+
+    const T*
+    begin() const {
+        return items.ptr;
+    }
+
+    T*
+    end() {
+        return items.ptr + size;
+    }
+
+    const T*
+    end() const {
+        return items.ptr + size;
+    }
+
     void
     deinit() {
         allocator.free(items);
