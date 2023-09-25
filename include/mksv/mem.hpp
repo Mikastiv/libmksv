@@ -1,7 +1,9 @@
 #pragma once
 
 #include "assert.hpp"
+#include "math.hpp"
 #include "types.hpp"
+
 
 namespace mksv {
 namespace mem {
@@ -12,7 +14,7 @@ struct Slice {
     u64 len;
 
     constexpr Slice
-    at(const u64 index) {
+    at(const u64 index) const {
         assert(index < len);
         return {
             .ptr = ptr + index,
@@ -21,7 +23,7 @@ struct Slice {
     }
 
     constexpr Slice
-    sub(const u64 start, const u64 end) {
+    sub(const u64 start, const u64 end) const {
         assert(end >= start);
         assert(end <= len);
         return {
@@ -45,20 +47,21 @@ equal(const Slice<T> a, const Slice<T> b) {
 }
 
 template <typename T>
-struct SplitIter {
+constexpr bool
+is_delimiter(const Slice<T> slice, const Slice<T> delimiter, const u64 index) {
+    if (index + delimiter.len > slice.len) return false;
+    return equal(slice.sub(index, index + delimiter.len), delimiter);
+}
+
+template <typename T>
+struct TokenIter {
     Slice<T> buffer;
     Slice<T> delimiter;
     u64 index;
 
-    constexpr bool
-    is_delimiter(const u64 index) {
-        if (index + delimiter.len > buffer.len) return false;
-        return equal(buffer.sub(index, index + delimiter.len), delimiter);
-    }
-
-    constexpr bool
+    [[nodiscard]] constexpr bool
     next(Slice<T>* value) {
-        while (index < buffer.len && is_delimiter(index)) {
+        while (index < buffer.len && is_delimiter(buffer, delimiter, index)) {
             index += delimiter.len;
         }
 
@@ -66,9 +69,42 @@ struct SplitIter {
 
         const u64 start = index;
         u64 end = start;
-        while (end < buffer.len && !is_delimiter(end)) ++end;
+        while (end < buffer.len && !is_delimiter(buffer, delimiter, end)) ++end;
 
         index += end - start;
+
+        *value = buffer.sub(start, end);
+
+        return true;
+    }
+};
+
+template <typename T>
+TokenIter<T>
+tokenize(const Slice<T> slice, const Slice<T> delimiter) {
+    return {
+        .buffer = slice,
+        .delimiter = delimiter,
+        .index = 0,
+    };
+}
+
+template <typename T>
+struct SplitIter {
+    Slice<T> buffer;
+    Slice<T> delimiter;
+    u64 index;
+
+    [[nodiscard]] constexpr bool
+    next(Slice<T>* value) {
+        if (index == buffer.len) return false;
+
+        const u64 start = index;
+        u64 end = start;
+        while (end < buffer.len && !is_delimiter(buffer, delimiter, end)) ++end;
+
+        index += end - start;
+        index = math::min(buffer.len, index + 1);
 
         *value = buffer.sub(start, end);
 
