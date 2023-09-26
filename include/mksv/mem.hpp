@@ -229,6 +229,7 @@ find(const Slice<T> haystack, const Slice<T> needle, u64* out_idx) {
 }
 
 } // namespace mem
+
 } // namespace mksv
 
 using Str = mksv::mem::Slice<u8>;
@@ -247,3 +248,6 @@ str(const char* str) {
         .len = str_len(str),
     };
 }
+
+[[nodiscard]] bool
+dupe_z(const mksv::mem::Allocator allocator, const Str string, Str* out_string);
