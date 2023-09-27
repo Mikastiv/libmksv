@@ -172,6 +172,16 @@ _get_format_specifier(const Str fmt_string) {
     return FormatSpecifier::Unknown;
 }
 
+FormatBase
+_get_base(const Str base_str) {
+    if (mem::equal(base_str, str("b"))) return FormatBase::Binary;
+    if (mem::equal(base_str, str("o"))) return FormatBase::Octal;
+    if (mem::equal(base_str, str("d"))) return FormatBase::Decimal;
+    if (mem::equal(base_str, str("x"))) return FormatBase::HexadecimalLower;
+    if (mem::equal(base_str, str("X"))) return FormatBase::HexadecimalUpper;
+    return FormatBase::Unknown;
+}
+
 u64
 _count_specifiers(const Str fmt) {
     u64 count = 0;
@@ -212,23 +222,41 @@ _format_string(const Str buffer, const Str str) {
     return { .ptr = buffer.ptr, .len = str.len };
 }
 
-template <typename T, typename U>
+static const Str
+get_base_characters(const FormatBase base) {
+    switch (base) {
+        case FormatBase::Decimal:
+            return str("0123456789");
+        case FormatBase::HexadecimalLower:
+            return str("0123456789abcdef");
+        case FormatBase::HexadecimalUpper:
+            return str("0123456789ABCDEF");
+        case FormatBase::Octal:
+            return str("01234567");
+        case FormatBase::Binary:
+            return str("01");
+        case FormatBase::Unknown:
+            return str("U");
+    }
+}
+
+template <typename T>
 static i32
-numlen(T num, const U base) {
+numlen(T num, const u64 base) {
     i32 len = 0;
 
-    while (num / base != 0) {
-        num /= base;
+    while (num / (T)base != 0) {
+        num /= (T)base;
         ++len;
     }
 
     return len + 1;
 }
 
-template <typename T, typename U>
+template <typename T>
 static Str
-itoa(const Str buffer, T num, const U base) {
-    i32 len = numlen(num, base);
+itoa(const Str buffer, T num, const Str base) {
+    i32 len = numlen(num, base.len);
     u64 ret_len = (u64)len;
     i32 offset = 0;
 
@@ -241,54 +269,54 @@ itoa(const Str buffer, T num, const U base) {
     }
 
     while (len > 0) {
-        i32 n = num % base;
+        i32 n = (i32)num % (i32)base.len;
         if (n < 0) n = -n;
         --len;
-        buffer.ptr[len + offset] = '0' + n;
-        num /= base;
+        buffer.ptr[len + offset] = base.ptr[n];
+        num /= base.len;
     }
 
     return { .ptr = buffer.ptr, .len = ret_len };
 }
 
 Str
-_format_integer(const Str buffer, const u8 num, const u8 base) {
-    return itoa(buffer, num, base);
+_format_integer(const Str buffer, const u8 num, const FormatBase base) {
+    return itoa(buffer, num, get_base_characters(base));
 }
 
 Str
-_format_integer(const Str buffer, const u16 num, const u8 base) {
-    return itoa(buffer, num, base);
+_format_integer(const Str buffer, const u16 num, const FormatBase base) {
+    return itoa(buffer, num, get_base_characters(base));
 }
 
 Str
-_format_integer(const Str buffer, const u32 num, const u8 base) {
-    return itoa(buffer, num, base);
+_format_integer(const Str buffer, const u32 num, const FormatBase base) {
+    return itoa(buffer, num, get_base_characters(base));
 }
 
 Str
-_format_integer(const Str buffer, const u64 num, const u8 base) {
-    return itoa(buffer, num, base);
+_format_integer(const Str buffer, const u64 num, const FormatBase base) {
+    return itoa(buffer, num, get_base_characters(base));
 }
 
 Str
-_format_integer(const Str buffer, const i8 num, const i8 base) {
-    return itoa(buffer, num, base);
+_format_integer(const Str buffer, const i8 num, const FormatBase base) {
+    return itoa(buffer, num, get_base_characters(base));
 }
 
 Str
-_format_integer(const Str buffer, const i16 num, const i8 base) {
-    return itoa(buffer, num, base);
+_format_integer(const Str buffer, const i16 num, const FormatBase base) {
+    return itoa(buffer, num, get_base_characters(base));
 }
 
 Str
-_format_integer(const Str buffer, const i32 num, const i8 base) {
-    return itoa(buffer, num, base);
+_format_integer(const Str buffer, const i32 num, const FormatBase base) {
+    return itoa(buffer, num, get_base_characters(base));
 }
 
 Str
-_format_integer(const Str buffer, const i64 num, const i8 base) {
-    return itoa(buffer, num, base);
+_format_integer(const Str buffer, const i64 num, const FormatBase base) {
+    return itoa(buffer, num, get_base_characters(base));
 }
 
 Str

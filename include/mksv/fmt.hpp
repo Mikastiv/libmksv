@@ -62,65 +62,77 @@ enum struct FormatSpecifier {
 };
 
 FormatSpecifier
-_get_format_specifier(const Str str);
+_get_format_specifier(const Str fmt_string);
+
+enum struct FormatBase {
+    Decimal,
+    HexadecimalLower,
+    HexadecimalUpper,
+    Octal,
+    Binary,
+    Unknown,
+};
+
+FormatBase
+_get_base(const Str base_str);
 
 Str
 _format_string(const Str buffer, const Str str);
 
 Str
-_format_integer(const Str buffer, const u8 num, const u8 base);
+_format_integer(const Str buffer, const u8 num, const FormatBase base);
 
 Str
-_format_integer(const Str buffer, const u16 num, const u8 base);
+_format_integer(const Str buffer, const u16 num, const FormatBase base);
 
 Str
-_format_integer(const Str buffer, const u32 num, const u8 base);
+_format_integer(const Str buffer, const u32 num, const FormatBase base);
 
 Str
-_format_integer(const Str buffer, const u64 num, const u8 base);
+_format_integer(const Str buffer, const u64 num, const FormatBase base);
 
 Str
-_format_integer(const Str buffer, const i8 num, const i8 base);
+_format_integer(const Str buffer, const i8 num, const FormatBase base);
 
 Str
-_format_integer(const Str buffer, const i16 num, const i8 base);
+_format_integer(const Str buffer, const i16 num, const FormatBase base);
 
 Str
-_format_integer(const Str buffer, const i32 num, const i8 base);
+_format_integer(const Str buffer, const i32 num, const FormatBase base);
 
 Str
-_format_integer(const Str buffer, const i64 num, const i8 base);
+_format_integer(const Str buffer, const i64 num, const FormatBase base);
 
 template <typename T>
 Str
-_format_dispatch(const Str buffer, const FormatSpecifier spec, const T* value) {
+_format_dispatch(const Str buffer, const FormatSpecifier spec, const T* value, const FormatBase base) {
     switch (spec) {
         case FormatSpecifier::String: {
-            return _format_string(buffer, *reinterpret_cast<const Str*>(value));
+            return _format_string(buffer, *(const Str*)value);
         } break;
         case FormatSpecifier::Unsigned8: {
-            return _format_integer(buffer, *reinterpret_cast<const u8*>(value), 10);
+            return _format_integer(buffer, *(const u8*)value, base);
         } break;
         case FormatSpecifier::Unsigned16: {
-            return _format_integer(buffer, *reinterpret_cast<const u16*>(value), 10);
+            return _format_integer(buffer, *(const u16*)value, base);
         } break;
         case FormatSpecifier::Unsigned32: {
-            return _format_integer(buffer, *reinterpret_cast<const u32*>(value), 10);
+            return _format_integer(buffer, *(const u32*)value, base);
         } break;
         case FormatSpecifier::Unsigned64: {
-            return _format_integer(buffer, *reinterpret_cast<const u64*>(value), 10);
+            return _format_integer(buffer, *(const u64*)value, base);
         } break;
         case FormatSpecifier::Signed8: {
-            return _format_integer(buffer, *reinterpret_cast<const i8*>(value), 10);
+            return _format_integer(buffer, *(const i8*)value, base);
         } break;
         case FormatSpecifier::Signed16: {
-            return _format_integer(buffer, *reinterpret_cast<const i16*>(value), 10);
+            return _format_integer(buffer, *(const i16*)value, base);
         } break;
         case FormatSpecifier::Signed32: {
-            return _format_integer(buffer, *reinterpret_cast<const i32*>(value), 10);
+            return _format_integer(buffer, *(const i32*)value, base);
         } break;
         case FormatSpecifier::Signed64: {
-            return _format_integer(buffer, *reinterpret_cast<const i64*>(value), 10);
+            return _format_integer(buffer, *(const i64*)value, base);
         } break;
         default: {
             return Str::null();
@@ -179,14 +191,37 @@ _format_inner(const Str buffer, const Str fmt, T value, Args... args) {
         ++idx;
 
         const Str fmt_string = { .ptr = fmt.ptr + fmt_start, .len = fmt_end - fmt_start };
-        FormatSpecifier spec = _get_format_specifier(fmt_string);
+        u64 fmt_specifier_start = fmt_start;
+        u64 fmt_specifier_end = fmt_end;
+
+        bool has_base = false;
+        u64 colon = 0;
+        if (mem::find(fmt_string, str(":"), &colon)) {
+            has_base = true;
+            fmt_specifier_end = fmt_start + colon;
+        }
+
+        FormatSpecifier spec = _get_format_specifier({
+            .ptr = fmt.ptr + fmt_specifier_start,
+            .len = fmt_specifier_end - fmt_specifier_start,
+        });
         if (spec == FormatSpecifier::Unknown) return Str::null();
+
+        FormatBase base = FormatBase::Decimal;
+        if (has_base) {
+            const u64 base_start = fmt_specifier_end + 1;
+            const u64 base_end = fmt_end;
+            if (base_start != base_end) {
+                base = _get_base({ .ptr = fmt.ptr + base_start, .len = base_end - base_start });
+            }
+        }
+        if (base == FormatBase::Unknown) return Str::null();
 
         const Str remaining_buffer = {
             .ptr = buffer.ptr + write_idx,
             .len = buffer.len - write_idx,
         };
-        const Str format_result = _format_dispatch(remaining_buffer, spec, &value);
+        const Str format_result = _format_dispatch(remaining_buffer, spec, &value, base);
         if (format_result.ptr == nullptr) return Str::null();
         write_idx += format_result.len;
 
@@ -211,6 +246,12 @@ format(const Str buffer, const Str fmt) {
     return _format_inner(buffer, fmt);
 }
 
+// Format string
+// Syntax: {[type]:[base]}
+//
+// type: s for string; u8, u16, i8, i16, etc, for integers
+//
+// base: d for decimal, o for octal, b for binary, x or X for hexadecimal
 template <typename T, typename... Args>
 Str
 format(const Str buffer, const Str fmt, T value, Args... args) {
