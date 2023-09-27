@@ -158,5 +158,82 @@ parse_int(const Str str, const i64 base, i64* out) {
     return convert_int(str, base, out);
 }
 
+FormatSpecifer
+_get_format_specifier(const Str fmt_string) {
+    if (mem::equal(fmt_string, str("d"))) return FormatSpecifer::Decimal;
+    if (mem::equal(fmt_string, str("x"))) return FormatSpecifer::HexadecimalLower;
+    if (mem::equal(fmt_string, str("X"))) return FormatSpecifer::HexadecimalUpper;
+    if (mem::equal(fmt_string, str("b"))) return FormatSpecifer::Binary;
+    if (mem::equal(fmt_string, str("s"))) return FormatSpecifer::String;
+    return FormatSpecifer::Unknown;
+}
+
+u64
+_count_specifiers(const Str fmt) {
+    u64 count = 0;
+    u64 idx = 0;
+    while (idx < fmt.len) {
+        while (idx < fmt.len && fmt.ptr[idx] != '{' && fmt.ptr[idx] != '}') ++idx;
+
+        bool restart_loop = false;
+        if (idx + 1 < fmt.len && fmt.ptr[idx + 1] == fmt.ptr[idx]) {
+            idx += 2;
+            restart_loop = true;
+        }
+
+        if (restart_loop) continue;
+
+        if (idx >= fmt.len) break;
+
+        assert(fmt.ptr[idx] == '{');
+        assert(fmt.ptr[idx] != '}');
+
+        ++idx;
+
+        while (idx < fmt.len && fmt.ptr[idx] != '}') ++idx;
+
+        assert(idx < fmt.len);
+        assert(fmt.ptr[idx] == '}');
+
+        ++idx;
+        ++count;
+    }
+
+    return count;
+}
+
+Str
+_format_string(const Str buffer, const Str str) {
+    mem::copy({ .ptr = buffer.ptr, .len = str.len }, str);
+    return { .ptr = buffer.ptr, .len = str.len };
+}
+
+Str
+_format_inner(const Str buffer, const Str fmt) {
+    u64 write_idx = 0;
+
+    u64 idx = 0;
+    while (idx < fmt.len) {
+        const u64 start = idx;
+
+        while (idx < fmt.len && fmt.ptr[idx] != '{' && fmt.ptr[idx] != '}') ++idx;
+
+        u64 end = idx;
+        if (idx + 1 < fmt.len && fmt.ptr[idx + 1] == fmt.ptr[idx]) {
+            end += 1;
+            idx += 2;
+        }
+
+        if (start != end) {
+            const Str litteral = { .ptr = &fmt.ptr[start], .len = end - start };
+            if (litteral.len > buffer.len - write_idx) return Str::null();
+            mem::copy({ .ptr = buffer.ptr + write_idx, .len = litteral.len }, litteral);
+            write_idx += litteral.len;
+        }
+    }
+
+    return { .ptr = buffer.ptr, .len = write_idx };
+}
+
 } // namespace fmt
 } // namespace mksv

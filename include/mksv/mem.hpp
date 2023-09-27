@@ -12,6 +12,11 @@ struct Slice {
     T* ptr;
     u64 len;
 
+    static constexpr Slice
+    null() {
+        return { .ptr = nullptr, .len = 0 };
+    }
+
     constexpr Slice
     at(const u64 index) const {
         assert(index < len);
@@ -161,7 +166,7 @@ struct Allocator {
         vtable.free_fn(ctx, buf.ptr, buf.len * sizeof(T), alignof(T));
     }
 
-    [[nodiscard]] bool
+    [[nodiscard]] inline bool
     raw_alloc(const u64 len, const u64 alignment, Slice<u8>* out_block) const {
         return vtable.alloc_fn(ctx, len, alignment, out_block);
     }
