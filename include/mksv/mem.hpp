@@ -235,22 +235,22 @@ find(const Slice<T> haystack, const Slice<T> needle, u64* out_idx) {
 
 } // namespace mem
 
-} // namespace mksv
-
-using Str = mksv::mem::Slice<u8>;
-
 constexpr u64
-str_len(const char* str) {
+strlen(const char* str) {
     u64 len = 0;
     while (str[len]) len++;
     return len;
 }
 
+} // namespace mksv
+
+using Str = mksv::mem::Slice<u8>;
+
 inline Str
 str(const char* str) {
     return {
         .ptr = (u8*)str,
-        .len = str_len(str),
+        .len = mksv::strlen(str),
     };
 }
 
