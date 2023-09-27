@@ -25,7 +25,7 @@ static u64 pow10_table[] = {
 };
 
 static constexpr u64
-parse_digits(const Str str, u64* idx, const u64 base) {
+parse_digits(const Str str, u64* idx, const u8 base) {
     u64 number = 0;
     while (*idx < str.len && is_digit(str.ptr[*idx])) {
         number *= base;
@@ -81,7 +81,7 @@ parse_float(const Str str, f64* out) {
 
 template <typename T>
 constexpr bool
-convert_uint(const Str str, const T base, T* out) {
+convert_uint(const Str str, const u8 base, T* out) {
     if (str.len == 0) return false;
 
     u64 idx = 0;
@@ -98,7 +98,7 @@ convert_uint(const Str str, const T base, T* out) {
 
 template <typename T>
 constexpr bool
-convert_int(const Str str, const T base, T* out) {
+convert_int(const Str str, const i8 base, T* out) {
     if (str.len == 0) return false;
 
     u64 idx = 0;
@@ -124,17 +124,17 @@ parse_int(const Str str, const u8 base, u8* out) {
 }
 
 bool
-parse_int(const Str str, const u16 base, u16* out) {
+parse_int(const Str str, const u8 base, u16* out) {
     return convert_uint(str, base, out);
 }
 
 bool
-parse_int(const Str str, const u32 base, u32* out) {
+parse_int(const Str str, const u8 base, u32* out) {
     return convert_uint(str, base, out);
 }
 
 bool
-parse_int(const Str str, const u64 base, u64* out) {
+parse_int(const Str str, const u8 base, u64* out) {
     return convert_uint(str, base, out);
 }
 
@@ -144,28 +144,32 @@ parse_int(const Str str, const i8 base, i8* out) {
 }
 
 bool
-parse_int(const Str str, const i16 base, i16* out) {
+parse_int(const Str str, const i8 base, i16* out) {
     return convert_int(str, base, out);
 }
 
 bool
-parse_int(const Str str, const i32 base, i32* out) {
+parse_int(const Str str, const i8 base, i32* out) {
     return convert_int(str, base, out);
 }
 
 bool
-parse_int(const Str str, const i64 base, i64* out) {
+parse_int(const Str str, const i8 base, i64* out) {
     return convert_int(str, base, out);
 }
 
-FormatSpecifer
+FormatSpecifier
 _get_format_specifier(const Str fmt_string) {
-    if (mem::equal(fmt_string, str("d"))) return FormatSpecifer::Decimal;
-    if (mem::equal(fmt_string, str("x"))) return FormatSpecifer::HexadecimalLower;
-    if (mem::equal(fmt_string, str("X"))) return FormatSpecifer::HexadecimalUpper;
-    if (mem::equal(fmt_string, str("b"))) return FormatSpecifer::Binary;
-    if (mem::equal(fmt_string, str("s"))) return FormatSpecifer::String;
-    return FormatSpecifer::Unknown;
+    if (mem::equal(fmt_string, str("u8"))) return FormatSpecifier::Unsigned8;
+    if (mem::equal(fmt_string, str("u16"))) return FormatSpecifier::Unsigned16;
+    if (mem::equal(fmt_string, str("u32"))) return FormatSpecifier::Unsigned32;
+    if (mem::equal(fmt_string, str("u64"))) return FormatSpecifier::Unsigned64;
+    if (mem::equal(fmt_string, str("i8"))) return FormatSpecifier::Signed8;
+    if (mem::equal(fmt_string, str("i16"))) return FormatSpecifier::Signed16;
+    if (mem::equal(fmt_string, str("i32"))) return FormatSpecifier::Signed32;
+    if (mem::equal(fmt_string, str("i64"))) return FormatSpecifier::Signed64;
+    if (mem::equal(fmt_string, str("s"))) return FormatSpecifier::String;
+    return FormatSpecifier::Unknown;
 }
 
 u64
@@ -206,6 +210,85 @@ Str
 _format_string(const Str buffer, const Str str) {
     mem::copy({ .ptr = buffer.ptr, .len = str.len }, str);
     return { .ptr = buffer.ptr, .len = str.len };
+}
+
+template <typename T, typename U>
+static i32
+numlen(T num, const U base) {
+    i32 len = 0;
+
+    while (num / base != 0) {
+        num /= base;
+        ++len;
+    }
+
+    return len + 1;
+}
+
+template <typename T, typename U>
+static Str
+itoa(const Str buffer, T num, const U base) {
+    i32 len = numlen(num, base);
+    u64 ret_len = (u64)len;
+    i32 offset = 0;
+
+    if (num < 0) ++ret_len;
+    if (ret_len > buffer.len) return Str::null();
+
+    if (num < 0) {
+        offset = 1;
+        buffer.ptr[0] = '-';
+    }
+
+    while (len > 0) {
+        i32 n = num % base;
+        if (n < 0) n = -n;
+        --len;
+        buffer.ptr[len + offset] = '0' + n;
+        num /= base;
+    }
+
+    return { .ptr = buffer.ptr, .len = ret_len };
+}
+
+Str
+_format_integer(const Str buffer, const u8 num, const u8 base) {
+    return itoa(buffer, num, base);
+}
+
+Str
+_format_integer(const Str buffer, const u16 num, const u8 base) {
+    return itoa(buffer, num, base);
+}
+
+Str
+_format_integer(const Str buffer, const u32 num, const u8 base) {
+    return itoa(buffer, num, base);
+}
+
+Str
+_format_integer(const Str buffer, const u64 num, const u8 base) {
+    return itoa(buffer, num, base);
+}
+
+Str
+_format_integer(const Str buffer, const i8 num, const i8 base) {
+    return itoa(buffer, num, base);
+}
+
+Str
+_format_integer(const Str buffer, const i16 num, const i8 base) {
+    return itoa(buffer, num, base);
+}
+
+Str
+_format_integer(const Str buffer, const i32 num, const i8 base) {
+    return itoa(buffer, num, base);
+}
+
+Str
+_format_integer(const Str buffer, const i64 num, const i8 base) {
+    return itoa(buffer, num, base);
 }
 
 Str

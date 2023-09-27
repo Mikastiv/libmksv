@@ -254,5 +254,14 @@ str(const char* str) {
     };
 }
 
+template <u64 size>
+inline Str
+str(u8 (&array)[size]) {
+    return {
+        .ptr = array,
+        .len = size,
+    };
+}
+
 [[nodiscard]] bool
 dupe_z(const mksv::mem::Allocator allocator, const Str string, Str* out_string);
