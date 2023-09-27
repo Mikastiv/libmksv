@@ -105,7 +105,12 @@ _format_integer(const Str buffer, const i64 num, const FormatBase base);
 
 template <typename T>
 Str
-_format_dispatch(const Str buffer, const FormatSpecifier spec, const T* value, const FormatBase base) {
+_format_dispatch(
+    const Str buffer,
+    const FormatSpecifier spec,
+    const T* value,
+    const FormatBase base
+) {
     switch (spec) {
         case FormatSpecifier::String: {
             return _format_string(buffer, *(const Str*)value);

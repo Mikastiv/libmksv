@@ -273,7 +273,7 @@ itoa(const Str buffer, T num, const Str base) {
         if (n < 0) n = -n;
         --len;
         buffer.ptr[len + offset] = base.ptr[n];
-        num /= base.len;
+        num /= (T)base.len;
     }
 
     return { .ptr = buffer.ptr, .len = ret_len };
