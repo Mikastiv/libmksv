@@ -200,7 +200,7 @@ copy(const Slice<T> dst, const Slice<T> src) {
 }
 
 template <typename T>
-bool
+[[nodiscard]] bool
 join(const Allocator allocator, Slice<T>* dst, const Slice<T> a, const Slice<T> b) {
     if (!allocator.alloc(a.len + b.len, dst)) return false;
     copy({ .ptr = dst->ptr, .len = a.len }, a);
@@ -209,7 +209,7 @@ join(const Allocator allocator, Slice<T>* dst, const Slice<T> a, const Slice<T> 
 }
 
 template <typename T>
-[[nodiscard]] constexpr bool
+constexpr bool
 find(const Slice<T> haystack, const Slice<T> needle, u64* out_idx) {
     if (needle.len > haystack.len) return false;
     if (haystack.len == 0 || needle.len == 0) return false;

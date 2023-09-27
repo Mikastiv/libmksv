@@ -14,7 +14,7 @@ struct SinglyLinkedList {
     Node* head = nullptr;
     u64 len = 0;
 
-    void
+    constexpr void
     append_node(Node* node) {
         if (head == nullptr) {
             head = node;
@@ -28,7 +28,7 @@ struct SinglyLinkedList {
         ++len;
     }
 
-    bool
+    constexpr bool
     remove_node(Node* node) {
         if (node == nullptr) return false;
 
@@ -48,7 +48,7 @@ struct SinglyLinkedList {
         return true;
     }
 
-    bool
+    [[nodiscard]] constexpr bool
     pop_front(Node* out) {
         if (head == nullptr) return false;
 
