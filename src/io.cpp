@@ -40,7 +40,8 @@ read_file(mem::Allocator allocator, const Str filename, mem::Slice<u8>* out_str)
     if (FAILED(GetFileSizeEx(handle, &filesize))) return false;
 
     mem::Slice<u8> file_content = {};
-    if (!allocator.alloc((u64)filesize.QuadPart, &file_content)) return false;
+    if (!allocator.alloc((u64)filesize.QuadPart + 1, &file_content)) return false;
+    file_content.len -= 1;
 
     DWORD bytes_read = 0;
     const DWORD size32 = filesize.QuadPart;
@@ -50,6 +51,7 @@ read_file(mem::Allocator allocator, const Str filename, mem::Slice<u8>* out_str)
         return false;
     }
 
+    file_content.ptr[file_content.len] = 0;
     *out_str = file_content;
 
     return true;
@@ -65,7 +67,8 @@ read_file(mem::Allocator allocator, const Str filename, mem::Slice<u8>* out_str)
     if (fstat(fd, &file_stat) < 0) return false;
 
     Str file_content = {};
-    if (!allocator.alloc((u64)file_stat.st_size, &file_content)) return false;
+    if (!allocator.alloc((u64)file_stat.st_size + 1, &file_content)) return false;
+    file_content.len -= 1;
 
     const ssize_t bytes_read = read(fd, file_content.ptr, file_content.len);
     if (bytes_read < 0 || bytes_read != file_stat.st_size) {
@@ -73,6 +76,7 @@ read_file(mem::Allocator allocator, const Str filename, mem::Slice<u8>* out_str)
         return false;
     }
 
+    file_content.ptr[file_content.len] = 0;
     *out_str = file_content;
 
     return true;

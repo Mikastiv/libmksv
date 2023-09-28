@@ -4,7 +4,6 @@
 #include "io.hpp"
 #include "mem.hpp"
 
-
 namespace mksv {
 namespace fmt {
 
@@ -269,6 +268,7 @@ format(const Str buffer, const Str fmt, T value, Args... args) {
     return _format_inner(buffer, fmt, value, args...);
 }
 
+// Max output size is 2048
 template <typename T, typename... Args>
 void
 print_stdout(const Str fmt, T value, Args... args) {
@@ -277,6 +277,7 @@ print_stdout(const Str fmt, T value, Args... args) {
     io::write_stdout(msg);
 }
 
+// Max output size is 2048
 template <typename T, typename... Args>
 void
 print_stderr(const Str fmt, T value, Args... args) {

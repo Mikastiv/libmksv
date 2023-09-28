@@ -5,6 +5,7 @@
 namespace mksv {
 namespace io {
 
+// Returned Str is null terminated
 [[nodiscard]] bool
 read_file(const mem::Allocator allocator, const Str filename, mem::Slice<u8>* out_str);
 
