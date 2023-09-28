@@ -68,7 +68,7 @@ read_file(mem::Allocator allocator, const Str filename, mem::Slice<u8>* out_str)
     if (!allocator.alloc((u64)file_stat.st_size, &file_content)) return false;
 
     const ssize_t bytes_read = read(fd, file_content.ptr, file_content.len);
-    if (bytes_read < 0) {
+    if (bytes_read < 0 || bytes_read != file_stat.st_size) {
         allocator.free(file_content);
         return false;
     }

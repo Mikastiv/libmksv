@@ -58,6 +58,7 @@ enum struct FormatSpecifier {
     Signed32,
     Signed64,
     String,
+    Pointer,
     Unknown,
 };
 
@@ -103,6 +104,9 @@ _format_integer(const Str buffer, const i32 num, const FormatBase base);
 Str
 _format_integer(const Str buffer, const i64 num, const FormatBase base);
 
+Str
+_format_pointer(const Str buffer, const u64 address, const FormatBase base);
+
 template <typename T>
 Str
 _format_dispatch(
@@ -138,6 +142,9 @@ _format_dispatch(
         } break;
         case FormatSpecifier::Signed64: {
             return _format_integer(buffer, *(const i64*)value, base);
+        } break;
+        case FormatSpecifier::Pointer: {
+            return _format_pointer(buffer, *(const u64*)value, base);
         } break;
         default: {
             return Str::null();
@@ -212,7 +219,8 @@ _format_inner(const Str buffer, const Str fmt, T value, Args... args) {
         });
         if (spec == FormatSpecifier::Unknown) return Str::null();
 
-        FormatBase base = FormatBase::Decimal;
+        FormatBase base =
+            spec == FormatSpecifier::Pointer ? FormatBase::HexadecimalUpper : FormatBase::Decimal;
         if (has_base) {
             const u64 base_start = fmt_specifier_end + 1;
             const u64 base_end = fmt_end;
@@ -248,7 +256,7 @@ format(const Str buffer, const Str fmt) {
 // Format string
 // Syntax: {[type]:[base]}
 //
-// type: s for string; u8, u16, i8, i16, etc, for integers
+// type: s for string; u8, u16, i8, i16, etc, for integers; p for address
 //
 // base: d for decimal, o for octal, b for binary, x or X for hexadecimal
 template <typename T, typename... Args>

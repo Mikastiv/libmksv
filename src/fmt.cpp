@@ -169,6 +169,7 @@ _get_format_specifier(const Str fmt_string) {
     if (mem::equal(fmt_string, (Str) "i32")) return FormatSpecifier::Signed32;
     if (mem::equal(fmt_string, (Str) "i64")) return FormatSpecifier::Signed64;
     if (mem::equal(fmt_string, (Str) "s")) return FormatSpecifier::String;
+    if (mem::equal(fmt_string, (Str) "p")) return FormatSpecifier::Pointer;
     return FormatSpecifier::Unknown;
 }
 
@@ -317,6 +318,18 @@ _format_integer(const Str buffer, const i32 num, const FormatBase base) {
 Str
 _format_integer(const Str buffer, const i64 num, const FormatBase base) {
     return itoa(buffer, num, get_base_characters(base));
+}
+
+Str
+_format_pointer(const Str buffer, const u64 address, const FormatBase base) {
+    if (buffer.len < 2) return Str::null();
+    mem::copy(Str{ buffer.ptr, 2 }, (Str) "0x");
+
+    const auto num =
+        itoa(Str{ buffer.ptr + 2, buffer.len - 2 }, address, get_base_characters(base));
+    if (num.ptr == nullptr) return Str::null();
+
+    return Str{ buffer.ptr, num.len + 2 };
 }
 
 Str
