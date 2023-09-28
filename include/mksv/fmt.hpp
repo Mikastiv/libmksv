@@ -270,20 +270,22 @@ format(const Str buffer, const Str fmt, T value, Args... args) {
 
 // Max output size is 2048
 template <typename T, typename... Args>
-void
+bool
 print_stdout(const Str fmt, T value, Args... args) {
     u8 buffer[2048] = {};
     const Str msg = format(buffer, fmt, value, args...);
-    io::write_stdout(msg);
+    if (msg.ptr == nullptr) return false;
+    return io::write_stdout(msg);
 }
 
 // Max output size is 2048
 template <typename T, typename... Args>
-void
+bool
 print_stderr(const Str fmt, T value, Args... args) {
     u8 buffer[2048] = {};
     const Str msg = format(str(buffer), fmt, value, args...);
-    io::write_stderr(msg);
+    if (msg.ptr == nullptr) return false;
+    return io::write_stderr(msg);
 }
 
 } // namespace fmt
