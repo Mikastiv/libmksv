@@ -35,7 +35,7 @@ os_allocate(void* ctx, const u64 size, const u64 alignment, mem::Slice<u8>* out_
     void* block = VirtualAlloc(nullptr, aligned_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
     if (block == nullptr) return false;
 
-    *out_block = { .ptr = (u8*)block, .len = aligned_size };
+    *out_block = mem::Slice<u8>{ (u8*)block, aligned_size };
     return true;
 #elif OS_MACOS
     u64 aligned_size = mem::align_up<u64>(size, os_page_granularity());
@@ -45,7 +45,7 @@ os_allocate(void* ctx, const u64 size, const u64 alignment, mem::Slice<u8>* out_
         mmap(nullptr, aligned_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
     if (block == MAP_FAILED) return false;
 
-    *out_block = { .ptr = (u8*)block, .len = aligned_size };
+    *out_block = mem::Slice<u8>{ (u8*)block, aligned_size };
     return true;
 #else
 #error "Unsupported OS"
@@ -99,10 +99,7 @@ arena_alloc(void* ctx, const u64 size, const u64 alignment, mem::Slice<u8>* out_
         const auto head = context->stack.head;
         const u64 size_left = head->data.len - context->end_idx;
         if (size_left >= aligned_size) {
-            *out_block = {
-                .ptr = head->data.ptr + context->end_idx,
-                .len = size,
-            };
+            *out_block = mem::Slice<u8>{ head->data.ptr + context->end_idx, size };
             context->end_idx += aligned_size;
             return true;
         }
@@ -119,7 +116,7 @@ arena_alloc(void* ctx, const u64 size, const u64 alignment, mem::Slice<u8>* out_
     context->stack.append_node(node);
     context->end_idx = aligned_node_size + aligned_size;
 
-    *out_block = { .ptr = block.ptr + aligned_node_size, .len = size };
+    *out_block = mem::Slice<u8>{ block.ptr + aligned_node_size, size };
     return true;
 }
 

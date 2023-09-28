@@ -4,36 +4,54 @@
 #include "math.hpp"
 #include "types.hpp"
 
+#include <type_traits>
+
 namespace mksv {
+
+constexpr u64
+str_len(const char* str) {
+    u64 len = 0;
+    while (str[len]) len++;
+    return len;
+}
+
 namespace mem {
 
 template <typename T>
 struct Slice {
-    T* ptr;
-    u64 len;
+    T* ptr = nullptr;
+    u64 len = 0;
 
     static constexpr Slice
     null() {
-        return { .ptr = nullptr, .len = 0 };
+        return Slice{ nullptr, 0 };
+    }
+
+    constexpr Slice() {
+    }
+
+    constexpr Slice(T* ptr, u64 len)
+        : ptr{ ptr },
+          len{ len } {
+    }
+
+    constexpr Slice(const char* s)
+        requires(std::is_same_v<u8, T>)
+        : ptr{ (u8*)s },
+          len{ str_len(s) } {
     }
 
     constexpr Slice
     at(const u64 index) const {
         assert(index < len);
-        return {
-            .ptr = ptr + index,
-            .len = len - index,
-        };
+        return Slice{ ptr + index, len - index };
     }
 
     constexpr Slice
     sub(const u64 start, const u64 end) const {
         assert(end >= start);
         assert(end <= len);
-        return {
-            .ptr = ptr + start,
-            .len = end - start,
-        };
+        return Slice{ ptr + start, end - start };
     }
 };
 
@@ -146,10 +164,7 @@ struct Allocator {
         Slice<u8> block = {};
         if (!vtable.alloc_fn(ctx, len * sizeof(T), alignof(T), &block)) return false;
 
-        *out_block = {
-            .ptr = (T*)block.ptr,
-            .len = len,
-        };
+        *out_block = Slice{ (T*)block.ptr, len };
 
         return true;
     }
@@ -208,8 +223,8 @@ template <typename T>
 [[nodiscard]] bool
 join(const Allocator allocator, Slice<T>* dst, const Slice<T> a, const Slice<T> b) {
     if (!allocator.alloc(a.len + b.len, dst)) return false;
-    copy({ .ptr = dst->ptr, .len = a.len }, a);
-    copy({ .ptr = dst->ptr + a.len, .len = b.len }, b);
+    copy(Slice{ dst->ptr, a.len }, a);
+    copy(Slice{ dst->ptr + a.len, b.len }, b);
     return true;
 }
 
@@ -224,7 +239,7 @@ find(const Slice<T> haystack, const Slice<T> needle, u64* out_idx) {
     }
 
     for (u64 idx = 0; idx < haystack.len - needle.len; ++idx) {
-        if (equal({ .ptr = haystack.ptr + idx, .len = needle.len }, needle)) {
+        if (equal(Slice{ haystack.ptr + idx, needle.len }, needle)) {
             *out_idx = idx;
             return true;
         }
@@ -235,32 +250,14 @@ find(const Slice<T> haystack, const Slice<T> needle, u64* out_idx) {
 
 } // namespace mem
 
-constexpr u64
-strlen(const char* str) {
-    u64 len = 0;
-    while (str[len]) len++;
-    return len;
-}
-
 } // namespace mksv
 
 using Str = mksv::mem::Slice<u8>;
 
-inline Str
-str(const char* str) {
-    return {
-        .ptr = (u8*)str,
-        .len = mksv::strlen(str),
-    };
-}
-
 template <u64 size>
 inline Str
 str(u8 (&array)[size]) {
-    return {
-        .ptr = array,
-        .len = size,
-    };
+    return Str{ array, size };
 }
 
 [[nodiscard]] bool

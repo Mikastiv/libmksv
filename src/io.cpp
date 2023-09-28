@@ -19,10 +19,10 @@ namespace mksv {
 namespace io {
 
 bool
-read_file(mem::Allocator allocator, const Str filename, Str* out_str) {
+read_file(mem::Allocator allocator, const Str filename, mem::Slice<u8>* out_str) {
 #if OS_WINDOWS
     char c_str[MAX_PATH] = {};
-    mem::copy({ .ptr = (u8*)c_str, .len = filename.len }, filename);
+    mem::copy(mem::Slice<u8>{ (u8*)c_str, filename.len }, filename);
 
     const HANDLE handle = CreateFileA(
         c_str,
@@ -55,7 +55,7 @@ read_file(mem::Allocator allocator, const Str filename, Str* out_str) {
     return true;
 #elif OS_MACOS
     char c_str[PATH_MAX] = {};
-    mem::copy({ .ptr = (u8*)c_str, .len = filename.len }, filename);
+    mem::copy(mem::Slice<u8>{ (u8*)c_str, filename.len }, filename);
 
     const int fd = open(c_str, O_RDONLY);
     if (fd < 0) return false;
@@ -83,10 +83,10 @@ read_file(mem::Allocator allocator, const Str filename, Str* out_str) {
 }
 
 bool
-write_file(const Str filename, const Str buffer) {
+write_file(const Str filename, const mem::Slice<u8> buffer) {
 #if OS_WINDOWS
     char c_str[MAX_PATH] = {};
-    mem::copy({ .ptr = (u8*)c_str, .len = filename.len }, filename);
+    mem::copy(mem::Slice<u8>{ (u8*)c_str, filename.len }, filename);
 
     const HANDLE handle = CreateFileA(
         c_str,
@@ -108,7 +108,7 @@ write_file(const Str filename, const Str buffer) {
     return true;
 #elif OS_MACOS
     char c_str[PATH_MAX] = {};
-    mem::copy({ .ptr = (u8*)c_str, .len = filename.len }, filename);
+    mem::copy(mem::Slice<u8>{ (u8*)c_str, filename.len }, filename);
 
     const int fd = open(c_str, O_WRONLY | O_CREAT | O_TRUNC, 0666);
     if (fd < 0) return false;

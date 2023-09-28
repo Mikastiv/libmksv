@@ -160,25 +160,25 @@ parse_int(const Str str, const i8 base, i64* out) {
 
 FormatSpecifier
 _get_format_specifier(const Str fmt_string) {
-    if (mem::equal(fmt_string, str("u8"))) return FormatSpecifier::Unsigned8;
-    if (mem::equal(fmt_string, str("u16"))) return FormatSpecifier::Unsigned16;
-    if (mem::equal(fmt_string, str("u32"))) return FormatSpecifier::Unsigned32;
-    if (mem::equal(fmt_string, str("u64"))) return FormatSpecifier::Unsigned64;
-    if (mem::equal(fmt_string, str("i8"))) return FormatSpecifier::Signed8;
-    if (mem::equal(fmt_string, str("i16"))) return FormatSpecifier::Signed16;
-    if (mem::equal(fmt_string, str("i32"))) return FormatSpecifier::Signed32;
-    if (mem::equal(fmt_string, str("i64"))) return FormatSpecifier::Signed64;
-    if (mem::equal(fmt_string, str("s"))) return FormatSpecifier::String;
+    if (mem::equal(fmt_string, (Str) "u8")) return FormatSpecifier::Unsigned8;
+    if (mem::equal(fmt_string, (Str) "u16")) return FormatSpecifier::Unsigned16;
+    if (mem::equal(fmt_string, (Str) "u32")) return FormatSpecifier::Unsigned32;
+    if (mem::equal(fmt_string, (Str) "u64")) return FormatSpecifier::Unsigned64;
+    if (mem::equal(fmt_string, (Str) "i8")) return FormatSpecifier::Signed8;
+    if (mem::equal(fmt_string, (Str) "i16")) return FormatSpecifier::Signed16;
+    if (mem::equal(fmt_string, (Str) "i32")) return FormatSpecifier::Signed32;
+    if (mem::equal(fmt_string, (Str) "i64")) return FormatSpecifier::Signed64;
+    if (mem::equal(fmt_string, (Str) "s")) return FormatSpecifier::String;
     return FormatSpecifier::Unknown;
 }
 
 FormatBase
 _get_base(const Str base_str) {
-    if (mem::equal(base_str, str("b"))) return FormatBase::Binary;
-    if (mem::equal(base_str, str("o"))) return FormatBase::Octal;
-    if (mem::equal(base_str, str("d"))) return FormatBase::Decimal;
-    if (mem::equal(base_str, str("x"))) return FormatBase::HexadecimalLower;
-    if (mem::equal(base_str, str("X"))) return FormatBase::HexadecimalUpper;
+    if (mem::equal(base_str, (Str) "b")) return FormatBase::Binary;
+    if (mem::equal(base_str, (Str) "o")) return FormatBase::Octal;
+    if (mem::equal(base_str, (Str) "d")) return FormatBase::Decimal;
+    if (mem::equal(base_str, (Str) "x")) return FormatBase::HexadecimalLower;
+    if (mem::equal(base_str, (Str) "X")) return FormatBase::HexadecimalUpper;
     return FormatBase::Unknown;
 }
 
@@ -218,25 +218,25 @@ _count_specifiers(const Str fmt) {
 
 Str
 _format_string(const Str buffer, const Str str) {
-    mem::copy({ .ptr = buffer.ptr, .len = str.len }, str);
-    return { .ptr = buffer.ptr, .len = str.len };
+    mem::copy(Str{ buffer.ptr, str.len }, str);
+    return Str{ buffer.ptr, str.len };
 }
 
 static const Str
 get_base_characters(const FormatBase base) {
     switch (base) {
         case FormatBase::Decimal:
-            return str("0123456789");
+            return "0123456789";
         case FormatBase::HexadecimalLower:
-            return str("0123456789abcdef");
+            return "0123456789abcdef";
         case FormatBase::HexadecimalUpper:
-            return str("0123456789ABCDEF");
+            return "0123456789ABCDEF";
         case FormatBase::Octal:
-            return str("01234567");
+            return "01234567";
         case FormatBase::Binary:
-            return str("01");
+            return "01";
         case FormatBase::Unknown:
-            return str("U");
+            return "U";
     }
 }
 
@@ -276,7 +276,7 @@ itoa(const Str buffer, T num, const Str base) {
         num /= (T)base.len;
     }
 
-    return { .ptr = buffer.ptr, .len = ret_len };
+    return Str{ buffer.ptr, ret_len };
 }
 
 Str
@@ -336,14 +336,14 @@ _format_inner(const Str buffer, const Str fmt) {
         }
 
         if (start != end) {
-            const Str litteral = { .ptr = &fmt.ptr[start], .len = end - start };
+            const auto litteral = Str{ &fmt.ptr[start], end - start };
             if (litteral.len > buffer.len - write_idx) return Str::null();
-            mem::copy({ .ptr = buffer.ptr + write_idx, .len = litteral.len }, litteral);
+            mem::copy(Str{ buffer.ptr + write_idx, litteral.len }, litteral);
             write_idx += litteral.len;
         }
     }
 
-    return { .ptr = buffer.ptr, .len = write_idx };
+    return Str{ buffer.ptr, write_idx };
 }
 
 } // namespace fmt

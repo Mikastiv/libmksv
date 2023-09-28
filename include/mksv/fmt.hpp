@@ -171,9 +171,9 @@ _format_inner(const Str buffer, const Str fmt, T value, Args... args) {
         }
 
         if (start != end) {
-            const Str litteral = { .ptr = &fmt.ptr[start], .len = end - start };
+            const auto litteral = Str{ &fmt.ptr[start], end - start };
             if (litteral.len > buffer.len - write_idx) return Str::null();
-            mem::copy({ .ptr = buffer.ptr + write_idx, .len = litteral.len }, litteral);
+            mem::copy(Str{ buffer.ptr + write_idx, litteral.len }, litteral);
             write_idx += litteral.len;
         }
 
@@ -195,20 +195,20 @@ _format_inner(const Str buffer, const Str fmt, T value, Args... args) {
         assert(fmt.ptr[idx] == '}');
         ++idx;
 
-        const Str fmt_string = { .ptr = fmt.ptr + fmt_start, .len = fmt_end - fmt_start };
+        const auto fmt_string = Str{ fmt.ptr + fmt_start, fmt_end - fmt_start };
         u64 fmt_specifier_start = fmt_start;
         u64 fmt_specifier_end = fmt_end;
 
         bool has_base = false;
         u64 colon = 0;
-        if (mem::find(fmt_string, str(":"), &colon)) {
+        if (mem::find(fmt_string, (Str) ":", &colon)) {
             has_base = true;
             fmt_specifier_end = fmt_start + colon;
         }
 
-        FormatSpecifier spec = _get_format_specifier({
-            .ptr = fmt.ptr + fmt_specifier_start,
-            .len = fmt_specifier_end - fmt_specifier_start,
+        FormatSpecifier spec = _get_format_specifier(Str{
+            fmt.ptr + fmt_specifier_start,
+            fmt_specifier_end - fmt_specifier_start,
         });
         if (spec == FormatSpecifier::Unknown) return Str::null();
 
@@ -217,33 +217,27 @@ _format_inner(const Str buffer, const Str fmt, T value, Args... args) {
             const u64 base_start = fmt_specifier_end + 1;
             const u64 base_end = fmt_end;
             if (base_start != base_end) {
-                base = _get_base({ .ptr = fmt.ptr + base_start, .len = base_end - base_start });
+                base = _get_base(Str{ fmt.ptr + base_start, base_end - base_start });
             }
         }
         if (base == FormatBase::Unknown) return Str::null();
 
-        const Str remaining_buffer = {
-            .ptr = buffer.ptr + write_idx,
-            .len = buffer.len - write_idx,
-        };
-        const Str format_result = _format_dispatch(remaining_buffer, spec, &value, base);
+        const auto remaining_buffer = Str{ buffer.ptr + write_idx, buffer.len - write_idx };
+        const auto format_result = _format_dispatch(remaining_buffer, spec, &value, base);
         if (format_result.ptr == nullptr) return Str::null();
         write_idx += format_result.len;
 
         const Str result_str = _format_inner(
-            { .ptr = buffer.ptr + write_idx, .len = buffer.len - write_idx },
-            { .ptr = fmt.ptr + idx, .len = fmt.len - idx },
+            Str{ buffer.ptr + write_idx, buffer.len - write_idx },
+            Str{ fmt.ptr + idx, fmt.len - idx },
             args...
         );
         if (result_str.ptr == nullptr) return Str::null();
 
-        return {
-            .ptr = buffer.ptr,
-            .len = write_idx + result_str.len,
-        };
+        return Str{ buffer.ptr, write_idx + result_str.len };
     }
 
-    return { .ptr = buffer.ptr, .len = write_idx };
+    return Str{ buffer.ptr, write_idx };
 }
 
 inline Str
