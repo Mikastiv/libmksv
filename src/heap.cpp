@@ -100,9 +100,11 @@ arena_alloc(void* ctx, const u64 size, const u64 alignment, mem::Slice<u8>* out_
 
     if (context->stack.head) {
         const auto head = context->stack.head;
-        const u64 size_left = head->data.len - context->end_idx;
+        const u64 aligned_index = mem::align_up(context->end_idx, alignment);
+        const u64 size_left = head->data.len - aligned_index;
         if (size_left >= aligned_size) {
-            *out_block = mem::Slice<u8>{ head->data.ptr + context->end_idx, size };
+            *out_block = mem::Slice<u8>{ head->data.ptr + aligned_index, size };
+            context->end_idx = aligned_index;
             context->end_idx += aligned_size;
             u8 buffer[2048];
             Str msg = fmt::format(
