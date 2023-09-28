@@ -1,7 +1,9 @@
 #pragma once
 
 #include "assert.hpp"
+#include "io.hpp"
 #include "mem.hpp"
+
 
 namespace mksv {
 namespace fmt {
@@ -265,6 +267,22 @@ format(const Str buffer, const Str fmt, T value, Args... args) {
     assert(sizeof...(args) + 1 == _count_specifiers(fmt));
 
     return _format_inner(buffer, fmt, value, args...);
+}
+
+template <typename T, typename... Args>
+void
+print_stdout(const Str fmt, T value, Args... args) {
+    u8 buffer[2048] = {};
+    const Str msg = format(buffer, fmt, value, args...);
+    io::write_stdout(msg);
+}
+
+template <typename T, typename... Args>
+void
+print_stderr(const Str fmt, T value, Args... args) {
+    u8 buffer[2048] = {};
+    const Str msg = format(str(buffer), fmt, value, args...);
+    io::write_stderr(msg);
 }
 
 } // namespace fmt
