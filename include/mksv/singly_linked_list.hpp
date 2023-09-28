@@ -28,6 +28,18 @@ struct SinglyLinkedList {
         ++len;
     }
 
+    constexpr void
+    prepend_node(Node* node) {
+        if (head == nullptr) {
+            head = node;
+        } else {
+            Node* ptr = head;
+            head = node;
+            head->next = ptr;
+        }
+        ++len;
+    }
+
     constexpr bool
     remove_node(Node* node) {
         if (node == nullptr) return false;

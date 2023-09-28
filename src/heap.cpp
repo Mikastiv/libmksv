@@ -4,9 +4,6 @@
 #include "math.hpp"
 #include "mem.hpp"
 
-#include "fmt.hpp"
-#include "io.hpp"
-
 #if OS_WINDOWS
 #include <windows.h>
 #endif
@@ -106,17 +103,6 @@ arena_alloc(void* ctx, const u64 size, const u64 alignment, mem::Slice<u8>* out_
             *out_block = mem::Slice<u8>{ head->data.ptr + aligned_index, size };
             context->end_idx = aligned_index;
             context->end_idx += aligned_size;
-            u8 buffer[2048];
-            Str msg = fmt::format(
-                str(buffer),
-                "Block {p} size:{u64}, End idx {u64}, size {u64}, alignment {u64}\n",
-                out_block->ptr,
-                out_block->len,
-                context->end_idx,
-                size,
-                alignment
-            );
-            io::write_stderr(msg);
             return true;
         }
     }
@@ -129,22 +115,11 @@ arena_alloc(void* ctx, const u64 size, const u64 alignment, mem::Slice<u8>* out_
 
     ArenaAllocator::Node* node = (ArenaAllocator::Node*)block.ptr;
     node->data = block;
-    context->stack.append_node(node);
+    context->stack.prepend_node(node);
     context->end_idx = aligned_node_size + aligned_size;
 
     *out_block = mem::Slice<u8>{ block.ptr + aligned_node_size, size };
 
-    u8 buffer[2048];
-    Str msg = fmt::format(
-        str(buffer),
-        "Block {p} size:{u64}, End idx {u64}, size {u64}, alignment {u64}\n",
-        out_block->ptr,
-        out_block->len,
-        context->end_idx,
-        size,
-        alignment
-    );
-    io::write_stderr(msg);
     return true;
 }
 
