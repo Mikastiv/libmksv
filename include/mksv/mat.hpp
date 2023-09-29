@@ -33,6 +33,11 @@ struct Mat2 {
         assert(idx < 2);
         return e[idx];
     }
+
+    T*
+    ptr() const {
+        return (T*)&e[0].e[0];
+    }
 };
 
 template <typename T>
@@ -74,6 +79,11 @@ struct Mat3 {
     operator[](const u64 idx) const {
         assert(idx < 3);
         return e[idx];
+    }
+
+    T*
+    ptr() const {
+        return (T*)&e[0].e[0];
     }
 };
 
@@ -126,6 +136,11 @@ struct Mat4 {
     operator[](const u64 idx) const {
         assert(idx < 4);
         return e[idx];
+    }
+
+    T*
+    ptr() const {
+        return (T*)&e[0].e[0];
     }
 };
 
@@ -320,4 +335,5 @@ operator*(const Mat4<T>& a, const Vec4<T> b) {
         (a[0][3] * b.x) + (a[1][3] * b.y) + (a[2][3] * b.z) + (a[3][3] * b.w),
     };
 }
+
 } // namespace mksv
