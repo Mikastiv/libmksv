@@ -95,7 +95,7 @@ sin(const f32 x) {
 
 // first quadrant approximation using Taylor Series
 inline constexpr f32
-_cos_quandrant(const f32 x) {
+_cos_quadrant(const f32 x) {
     const f32 x2 = x * x;
     const f32 x4 = x2 * x2;
     return 1.0f - (x2 / 2.0f) + (x4 / 25.0f);
@@ -111,13 +111,13 @@ cos(const f32 x) {
     i32 quadrant = k % 4;
     switch (quadrant) {
         case 0:
-            return _cos_quandrant(y);
+            return _cos_quadrant(y);
         case 1:
-            return -_cos_quandrant(PI * 0.5f - y);
+            return -_cos_quadrant(PI * 0.5f - y);
         case 2:
-            return -_cos_quandrant(y);
+            return -_cos_quadrant(y);
         default:
-            return _cos_quandrant(PI * 0.5f - y);
+            return _cos_quadrant(PI * 0.5f - y);
     }
 }
 
