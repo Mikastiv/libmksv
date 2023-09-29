@@ -70,7 +70,7 @@ _sin_quadrant(const f32 x) {
     const f32 x2 = x * x;
     const f32 x3 = x2 * x;
     const f32 x5 = x3 * x2;
-    return x - x3 / 6.0f + x5 / 120.0f;
+    return x - (x3 / 6.0f) + (x5 / 120.0f);
 }
 
 inline constexpr f32
@@ -78,7 +78,7 @@ sin(const f32 x) {
     // find quadrant
     const i32 k = (i32)(x * 2.0f / PI);
     // mod(x, PI / 2)
-    const f32 y = x - k * PI * 0.5f;
+    const f32 y = x - (k * PI * 0.5f);
 
     i32 quadrant = k % 4;
     switch (quadrant) {
@@ -98,7 +98,7 @@ inline constexpr f32
 _cos_quandrant(const f32 x) {
     const f32 x2 = x * x;
     const f32 x4 = x2 * x2;
-    return 1.0f - x2 / 2.0f + x4 / 25.0f;
+    return 1.0f - (x2 / 2.0f) + (x4 / 25.0f);
 }
 
 inline constexpr f32
@@ -106,18 +106,18 @@ cos(const f32 x) {
     // find quadrant
     const i32 k = (i32)(x * 2.0f / PI);
     // mod(x, PI / 2)
-    const f32 y = x - k * PI * 0.5f;
+    const f32 y = x - (k * PI * 0.5f);
 
     i32 quadrant = k % 4;
     switch (quadrant) {
         case 0:
             return _cos_quandrant(y);
         case 1:
-            return _cos_quandrant(PI * 0.5f - y);
+            return -_cos_quandrant(PI * 0.5f - y);
         case 2:
             return -_cos_quandrant(y);
         default:
-            return -_cos_quandrant(PI * 0.5f - y);
+            return _cos_quandrant(PI * 0.5f - y);
     }
 }
 
