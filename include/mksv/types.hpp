@@ -579,10 +579,67 @@ operator*(const Mat4<T>& a, const T b) {
 template <typename T>
 constexpr Mat2<T>
 operator*(const Mat2<T>& a, const Mat2<T>& b) {
-    return Mat2<T>{
+    return {
         (a[0][0] * b[0][0]) + (a[0][1] * b[1][0]),
         (a[0][0] * b[0][1]) + (a[0][1] * b[1][1]),
         (a[1][0] * b[0][0]) + (a[1][1] * b[1][0]),
         (a[1][0] * b[0][1]) + (a[1][1] * b[1][1]),
     };
+}
+
+template <typename T>
+constexpr Mat3<T>
+operator*(const Mat3<T>& a, const Mat3<T>& b) {
+    const T a00 = a[0][0];
+    const T a01 = a[0][1];
+    const T a02 = a[0][2];
+    const T a10 = a[1][0];
+    const T a11 = a[1][1];
+    const T a12 = a[1][2];
+    const T a20 = a[2][0];
+    const T a21 = a[2][1];
+    const T a22 = a[2][2];
+
+    const T b00 = b[0][0];
+    const T b01 = b[0][1];
+    const T b02 = b[0][2];
+    const T b10 = b[1][0];
+    const T b11 = b[1][1];
+    const T b12 = b[1][2];
+    const T b20 = b[2][0];
+    const T b21 = b[2][1];
+    const T b22 = b[2][2];
+
+    Mat3<T> out;
+    out[0][0] = (a00 * b00) + (a10 * b01) + (a20 * b02);
+    out[0][1] = (a01 * b00) + (a11 * b01) + (a21 * b02);
+    out[0][2] = (a02 * b00) + (a12 * b01) + (a22 * b02);
+    out[1][0] = (a00 * b10) + (a10 * b11) + (a20 * b12);
+    out[1][1] = (a01 * b10) + (a11 * b11) + (a21 * b12);
+    out[1][2] = (a02 * b10) + (a12 * b11) + (a22 * b12);
+    out[2][0] = (a00 * b20) + (a10 * b21) + (a20 * b22);
+    out[2][1] = (a01 * b20) + (a11 * b21) + (a21 * b22);
+    out[2][2] = (a02 * b20) + (a12 * b21) + (a22 * b22);
+    return out;
+}
+
+template <typename T>
+constexpr Mat4<T>
+operator*(const Mat4<T>& a, const Mat4<T>& b) {
+    const Vec4<T> a0 = a[0];
+    const Vec4<T> a1 = a[1];
+    const Vec4<T> a2 = a[2];
+    const Vec4<T> a3 = a[3];
+
+    const Vec4<T> b0 = b[0];
+    const Vec4<T> b1 = b[1];
+    const Vec4<T> b2 = b[2];
+    const Vec4<T> b3 = b[3];
+
+    Mat4<T> out;
+    out[0] = a0 * b0[0] + a1 * b0[1] + a2 * b0[2] + a3 * b0[3];
+    out[1] = a0 * b1[0] + a1 * b1[1] + a2 * b1[2] + a3 * b1[3];
+    out[2] = a0 * b2[0] + a1 * b2[1] + a2 * b2[2] + a3 * b2[3];
+    out[3] = a0 * b3[0] + a1 * b3[1] + a2 * b3[2] + a3 * b3[3];
+    return out;
 }
