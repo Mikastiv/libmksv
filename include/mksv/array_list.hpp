@@ -21,6 +21,29 @@ struct ArrayList {
     }
 
     [[nodiscard]] bool
+    ensure_capacity(const u64 capacity) {
+        if (items.len - size >= capacity) return true;
+
+        u64 new_cap = calculate_new_size(capacity);
+        if (new_cap == items.len) return false;
+
+        if (allocator.resize(items, new_cap)) {
+            items.len = new_cap;
+            return true;
+        }
+
+        mem::Slice<T> new_items = {};
+        if (!allocator.alloc<T>(new_cap, &new_items)) return false;
+
+        mem::copy<T>(mem::Slice<T>{ new_items.ptr, size }, mem::Slice<T>{ items.ptr, size });
+
+        allocator.free(items);
+        items = new_items;
+
+        return true;
+    }
+
+    [[nodiscard]] bool
     append(const mem::Slice<T> range) {
         if (!ensure_capacity(range.len)) return false;
 
@@ -90,29 +113,6 @@ private:
         }
 
         return new_cap;
-    }
-
-    bool
-    ensure_capacity(const u64 added_size) {
-        if (items.len - size >= added_size) return true;
-
-        u64 new_cap = calculate_new_size(added_size);
-        if (new_cap == items.len) return false;
-
-        if (allocator.resize(items, new_cap)) {
-            items.len = new_cap;
-            return true;
-        }
-
-        mem::Slice<T> new_items = {};
-        if (!allocator.alloc<T>(new_cap, &new_items)) return false;
-
-        mem::copy<T>(mem::Slice<T>{ new_items.ptr, size }, mem::Slice<T>{ items.ptr, size });
-
-        allocator.free(items);
-        items = new_items;
-
-        return true;
     }
 };
 

@@ -136,11 +136,12 @@ sqrt(const f32 x) {
         u32 i;
     } val = { x };
 
+    // Approximation
     val.i = (1 << 29) + (val.i >> 1) - (1 << 22) + (u32)-0x4B0D2;
 
     u32 i = 0;
     f32 y = val.f;
-    const u32 iterations = 3;
+    constexpr u32 iterations = 3;
     while (i < iterations) {
         y = 0.5f * (y + (x / y));
         ++i;
