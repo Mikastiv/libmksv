@@ -390,6 +390,33 @@ rotate(const Mat4<T>& m, const T angle, Vec3<T> axis) {
     return out;
 }
 
+template <typename T>
+constexpr Mat4<T>
+orthographic(const T l, const T r, const T b, const T t, const T n, const T f) {
+    Mat4<T> out = { (T)1 };
+    out[0][0] = (T)2 / (r - l);
+    out[1][1] = (T)2 / (t - b);
+    out[2][2] = (T)-2 / (f - n);
+    out[3][0] = -(r + l) / (r - l);
+    out[3][1] = -(t + b) / (t - b);
+    out[3][2] = -(f + n) / (f - n);
+    return out;
+}
+
+template <typename T>
+constexpr Mat4<T>
+perspective(const T fovy, const T aspect, const T n, const T f) {
+    T const tan_half_fov = tan(fovy / (T)2);
+
+    Mat4<T> out = { (T)0 };
+    out[0][0] = (T)1 / (aspect * tan_half_fov);
+    out[1][1] = (T)1 / (tan_half_fov);
+    out[2][2] = -(f + n) / (f - n);
+    out[2][3] = (T)-1;
+    out[3][2] = -((T)2 * f * n) / (f - n);
+    return out;
+}
+
 } // namespace math
 
 } // namespace mksv

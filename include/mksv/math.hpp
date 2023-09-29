@@ -73,7 +73,7 @@ _sin_quadrant(const f32 x) {
     return x - (x3 / 6.0f) + (x5 / 120.0f);
 }
 
-inline constexpr f32
+constexpr f32
 sin(const f32 x) {
     // find quadrant
     const i32 k = (i32)(x * 2.0f / PI);
@@ -101,7 +101,7 @@ _cos_quandrant(const f32 x) {
     return 1.0f - (x2 / 2.0f) + (x4 / 25.0f);
 }
 
-inline constexpr f32
+constexpr f32
 cos(const f32 x) {
     // find quadrant
     const i32 k = (i32)(x * 2.0f / PI);
@@ -121,26 +121,32 @@ cos(const f32 x) {
     }
 }
 
+// TODO: Better algorithm
+constexpr f32
+tan(const f32 x) {
+    return sin(x) / cos(x);
+}
+
 inline constexpr f32
-sqrt(const f32 z) {
-    assert(z > 0.0f);
+sqrt(const f32 x) {
+    assert(x > 0.0f);
 
     union {
         f32 f;
         u32 i;
-    } val = { z };
+    } val = { x };
 
     val.i = (1 << 29) + (val.i >> 1) - (1 << 22) + (u32)-0x4B0D2;
 
     u32 i = 0;
-    f32 x = val.f;
+    f32 y = val.f;
     const u32 iterations = 3;
     while (i < iterations) {
-        x = 0.5f * (x + (z / x));
+        y = 0.5f * (y + (x / y));
         ++i;
     }
 
-    return x;
+    return y;
 }
 
 } // namespace math
