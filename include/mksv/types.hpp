@@ -2,6 +2,9 @@
 
 #include <stdint.h>
 
+// TODO: remove math.h
+#include <cmath>
+
 using u8 = uint8_t;
 using u16 = uint16_t;
 using u32 = uint32_t;
@@ -26,6 +29,25 @@ union Vec2 {
     };
 
     T e[2];
+
+    constexpr T
+    length() const {
+        return sqrt((x * x) + (y * y));
+    }
+
+    constexpr T
+    unit() const {
+        const T len = length();
+        return {
+            .x = x / len,
+            .y = y / len,
+        };
+    }
+
+    constexpr T
+    dot(const Vec2& other) const {
+        return (x * other.x) + (y * other.y);
+    }
 };
 
 template <typename T>
@@ -37,6 +59,35 @@ union Vec3 {
     };
 
     T e[3];
+
+    constexpr T
+    length() const {
+        return sqrt((x * x) + (y * y) + (z * z));
+    }
+
+    constexpr T
+    unit() const {
+        const T len = length();
+        return {
+            .x = x / len,
+            .y = y / len,
+            .z = z / len,
+        };
+    }
+
+    constexpr T
+    dot(const Vec3& other) const {
+        return (x * other.x) + (y * other.y) + (z * other.z);
+    }
+
+    constexpr Vec3
+    cross(const Vec3& other) const {
+        return {
+            .x = (y * other.z) - (z * other.y),
+            .y = (z * other.x) - (x * other.z),
+            .z = (x * other.y) - (y * other.x),
+        };
+    }
 };
 
 template <typename T>
@@ -49,6 +100,27 @@ union Vec4 {
     };
 
     T e[4];
+
+    constexpr T
+    length() const {
+        return sqrt((x * x) + (y * y) + (z * z) + (w * w));
+    }
+
+    constexpr T
+    unit() const {
+        const T len = length();
+        return {
+            .x = x / len,
+            .y = y / len,
+            .z = z / len,
+            .w = w / len,
+        };
+    }
+
+    constexpr T
+    dot(const Vec4& other) const {
+        return (x * other.x) + (y * other.y) + (z * other.z) + (w * other.w);
+    }
 };
 
 template <typename T>
@@ -108,6 +180,36 @@ operator-(const Vec4<T>& a, const Vec4<T>& b) {
         .y = a.y - b.y,
         .z = a.z - b.z,
         .w = a.w - b.w,
+    };
+}
+
+template <typename T>
+Vec2<T>
+operator-(const Vec2<T>& a) {
+    return {
+        .x = -a.x,
+        .y = -a.y,
+    };
+}
+
+template <typename T>
+Vec3<T>
+operator-(const Vec3<T>& a) {
+    return {
+        .x = -a.x,
+        .y = -a.y,
+        .z = -a.z,
+    };
+}
+
+template <typename T>
+Vec4<T>
+operator-(const Vec4<T>& a) {
+    return {
+        .x = -a.x,
+        .y = -a.y,
+        .z = -a.z,
+        .w = -a.w,
     };
 }
 
