@@ -64,6 +64,7 @@ degrees(const f32 radians) {
     return radians * (180.0f / PI);
 }
 
+// first quadrant approximation using Taylor Series
 inline constexpr f32
 _sin_quadrant(const f32 x) {
     const f32 x2 = x * x;
@@ -74,8 +75,11 @@ _sin_quadrant(const f32 x) {
 
 inline constexpr f32
 sin(const f32 x) {
+    // find quadrant
     const i32 k = (i32)(x * 2.0f / PI);
+    // mod(x, PI / 2)
     const f32 y = x - k * PI * 0.5f;
+
     i32 quadrant = k % 4;
     switch (quadrant) {
         case 0:
@@ -89,6 +93,7 @@ sin(const f32 x) {
     }
 }
 
+// first quadrant approximation using Taylor Series
 inline constexpr f32
 _cos_quandrant(const f32 x) {
     const f32 x2 = x * x;
@@ -98,8 +103,11 @@ _cos_quandrant(const f32 x) {
 
 inline constexpr f32
 cos(const f32 x) {
+    // find quadrant
     const i32 k = (i32)(x * 2.0f / PI);
+    // mod(x, PI / 2)
     const f32 y = x - k * PI * 0.5f;
+
     i32 quadrant = k % 4;
     switch (quadrant) {
         case 0:
