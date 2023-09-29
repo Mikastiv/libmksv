@@ -206,6 +206,10 @@ union Vec4 {
     }
 };
 
+using Vec2f = Vec2<f32>;
+using Vec3f = Vec3<f32>;
+using Vec4f = Vec4<f32>;
+
 template <typename T>
 constexpr Vec2<T>
 operator+(const Vec2<T>& a, const Vec2<T>& b) {
@@ -642,4 +646,34 @@ operator*(const Mat4<T>& a, const Mat4<T>& b) {
     out[2] = a0 * b2[0] + a1 * b2[1] + a2 * b2[2] + a3 * b2[3];
     out[3] = a0 * b3[0] + a1 * b3[1] + a2 * b3[2] + a3 * b3[3];
     return out;
+}
+
+template <typename T>
+constexpr Vec2<T>
+operator*(const Mat2<T>& a, const Vec2<T>& b) {
+    return {
+        (a[0][0] * b.x) + (a[1][0] * b.y),
+        (a[0][1] * b.x) + (a[1][1] * b.y),
+    };
+}
+
+template <typename T>
+constexpr Vec3<T>
+operator*(const Mat3<T>& a, const Vec3<T>& b) {
+    return {
+        (a[0][0] * b.x) + (a[1][0] * b.y) + (a[2][0] * b.z),
+        (a[0][1] * b.x) + (a[1][1] * b.y) + (a[2][1] * b.z),
+        (a[0][2] * b.x) + (a[1][2] * b.y) + (a[2][2] * b.z),
+    };
+}
+
+template <typename T>
+constexpr Vec4<T>
+operator*(const Mat4<T>& a, const Vec4<T>& b) {
+    return {
+        (a[0][0] * b.x) + (a[1][0] * b.y) + (a[2][0] * b.z) + (a[3][0] * b.w),
+        (a[0][1] * b.x) + (a[1][1] * b.y) + (a[2][1] * b.z) + (a[3][1] * b.w),
+        (a[0][2] * b.x) + (a[1][2] * b.y) + (a[2][2] * b.z) + (a[3][2] * b.w),
+        (a[0][3] * b.x) + (a[1][3] * b.y) + (a[2][3] * b.z) + (a[3][3] * b.w),
+    };
 }
