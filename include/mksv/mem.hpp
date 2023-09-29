@@ -2,8 +2,8 @@
 
 #include "assert.hpp"
 #include "math.hpp"
+#include "type_traits.hpp"
 #include "types.hpp"
-#include "utils.hpp"
 
 namespace mksv {
 
@@ -36,7 +36,7 @@ struct Slice {
 
     // Conversion from string litteral to Slice
     constexpr Slice(const char* s)
-        requires(is_same_v<u8, T>)
+        requires(traits::is_same_v<u8, T>)
         : ptr{ (u8*)s },
           len{ str_len(s) } {
     }
