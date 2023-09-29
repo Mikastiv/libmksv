@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mat.hpp"
+#include "assert.hpp"
 #include "types.hpp"
 
 namespace mksv {
@@ -64,57 +64,75 @@ degrees(const f32 radians) {
     return radians * (180.0f / PI);
 }
 
-template <typename T>
-constexpr Mat4<T>
-scale(const Mat4<T>& m, const Vec3<T> s) {
-    Mat4f out;
-    out[0] = m[0] * s[0];
-    out[1] = m[1] * s[1];
-    out[2] = m[2] * s[2];
-    out[3] = m[3];
-    return out;
+inline constexpr f32
+_sin_quadrant(const f32 x) {
+    const f32 x2 = x * x;
+    const f32 x3 = x2 * x;
+    const f32 x5 = x3 * x2;
+    return x - x3 / 6.0f + x5 / 120.0f;
 }
 
-template <typename T>
-constexpr Mat4<T>
-scale(const Mat4<T>& m, const T s) {
-    return scale(m, Vec3<T>(s, s, s));
+inline constexpr f32
+sin(const f32 x) {
+    const i32 k = (i32)(x * 2.0f / PI);
+    const f32 y = x - k * PI * 0.5f;
+    i32 quadrant = k % 4;
+    switch (quadrant) {
+        case 0:
+            return _sin_quadrant(y);
+        case 1:
+            return _sin_quadrant(PI * 0.5f - y);
+        case 2:
+            return -_sin_quadrant(y);
+        default:
+            return -_sin_quadrant(PI * 0.5f - y);
+    }
 }
 
-template <typename T>
-constexpr Mat4<T>
-translate(const Mat4<T>& m, const Vec3<T> t) {
-    Mat4f out = m;
-    out[3] = m[0] * t[0] + m[1] * t[1] + m[2] * t[2] + m[3];
-    return out;
+inline constexpr f32
+_cos_quandrant(const f32 x) {
+    const f32 x2 = x * x;
+    const f32 x4 = x2 * x2;
+    return 1.0f - x2 / 2.0f + x4 / 25.0f;
 }
 
-// TODO: set as constexpr
-template <typename T>
-Mat4<T>
-rotate(const Mat4<T>& m, const T angle, Vec3<T> axis) {
-    const T c = cos(angle);
-    const T s = sin(angle);
-    axis = axis.unit();
-    Vec3f t = { axis * ((T)1 - c) };
+inline constexpr f32
+cos(const f32 x) {
+    const i32 k = (i32)(x * 2.0f / PI);
+    const f32 y = x - k * PI * 0.5f;
+    i32 quadrant = k % 4;
+    switch (quadrant) {
+        case 0:
+            return _cos_quandrant(y);
+        case 1:
+            return _cos_quandrant(PI * 0.5f - y);
+        case 2:
+            return -_cos_quandrant(y);
+        default:
+            return -_cos_quandrant(PI * 0.5f - y);
+    }
+}
 
-    Mat4f r;
-    r[0][0] = c + t[0] * axis[0];
-    r[0][1] = t[0] * axis[1] + s * axis[2];
-    r[0][2] = t[0] * axis[2] - s * axis[1];
-    r[1][0] = t[1] * axis[0] - s * axis[2];
-    r[1][1] = c + t[1] * axis[1];
-    r[1][2] = t[1] * axis[2] + s * axis[0];
-    r[2][0] = t[2] * axis[0] + s * axis[1];
-    r[2][1] = t[2] * axis[1] - s * axis[0];
-    r[2][2] = c + t[2] * axis[2];
+inline constexpr f32
+sqrt(const f32 z) {
+    assert(z > 0.0f);
 
-    Mat4f out;
-    out[0] = m[0] * r[0][0] + m[1] * r[0][1] + m[2] * r[0][2];
-    out[1] = m[0] * r[1][0] + m[1] * r[1][1] + m[2] * r[1][2];
-    out[2] = m[0] * r[2][0] + m[1] * r[2][1] + m[2] * r[2][2];
-    out[3] = m[3];
-    return out;
+    union {
+        f32 f;
+        u32 i;
+    } val = { z };
+
+    val.i = (1 << 29) + (val.i >> 1) - (1 << 22) + (u32)-0x4B0D2;
+
+    u32 i = 0;
+    f32 x = val.f;
+    const u32 iterations = 3;
+    while (i < iterations) {
+        x = 0.5f * (x + (z / x));
+        ++i;
+    }
+
+    return x;
 }
 
 } // namespace math

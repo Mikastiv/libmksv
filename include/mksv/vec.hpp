@@ -1,9 +1,7 @@
 #pragma once
 
 #include "types.hpp"
-
-// TODO: remove math.h
-#include <cmath>
+#include "math.hpp"
 
 namespace mksv {
 template <typename T>
@@ -99,7 +97,7 @@ union Vec3 {
 
     constexpr T
     length() const {
-        return sqrt((x * x) + (y * y) + (z * z));
+        return math::sqrt((x * x) + (y * y) + (z * z));
     }
 
     constexpr Vec3

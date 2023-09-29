@@ -336,4 +336,60 @@ operator*(const Mat4<T>& a, const Vec4<T> b) {
     };
 }
 
+namespace math {
+
+template <typename T>
+constexpr Mat4<T>
+scale(const Mat4<T>& m, const Vec3<T> s) {
+    Mat4f out;
+    out[0] = m[0] * s[0];
+    out[1] = m[1] * s[1];
+    out[2] = m[2] * s[2];
+    out[3] = m[3];
+    return out;
+}
+
+template <typename T>
+constexpr Mat4<T>
+scale(const Mat4<T>& m, const T s) {
+    return scale(m, Vec3<T>(s, s, s));
+}
+
+template <typename T>
+constexpr Mat4<T>
+translate(const Mat4<T>& m, const Vec3<T> t) {
+    Mat4f out = m;
+    out[3] = m[0] * t[0] + m[1] * t[1] + m[2] * t[2] + m[3];
+    return out;
+}
+
+template <typename T>
+constexpr Mat4<T>
+rotate(const Mat4<T>& m, const T angle, Vec3<T> axis) {
+    const T c = cos(angle);
+    const T s = sin(angle);
+    axis = axis.unit();
+    Vec3f t = { axis * ((T)1 - c) };
+
+    Mat4f r;
+    r[0][0] = c + t[0] * axis[0];
+    r[0][1] = t[0] * axis[1] + s * axis[2];
+    r[0][2] = t[0] * axis[2] - s * axis[1];
+    r[1][0] = t[1] * axis[0] - s * axis[2];
+    r[1][1] = c + t[1] * axis[1];
+    r[1][2] = t[1] * axis[2] + s * axis[0];
+    r[2][0] = t[2] * axis[0] + s * axis[1];
+    r[2][1] = t[2] * axis[1] - s * axis[0];
+    r[2][2] = c + t[2] * axis[2];
+
+    Mat4f out;
+    out[0] = m[0] * r[0][0] + m[1] * r[0][1] + m[2] * r[0][2];
+    out[1] = m[0] * r[1][0] + m[1] * r[1][1] + m[2] * r[1][2];
+    out[2] = m[0] * r[2][0] + m[1] * r[2][1] + m[2] * r[2][2];
+    out[3] = m[3];
+    return out;
+}
+
+} // namespace math
+
 } // namespace mksv

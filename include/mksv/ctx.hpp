@@ -23,3 +23,15 @@
 #ifdef _WIN32
 #define OS_WINDOWS 1
 #endif
+
+#if COMPILER_CLANG || COMPILER_GCC
+#ifdef __x86_64__
+#define ARCH_X64 1
+#endif
+#endif
+
+#if COMPILER_CL
+#ifdef _M_AMD64
+#define ARCH_X64 1
+#endif
+#endif
