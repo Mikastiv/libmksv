@@ -66,70 +66,55 @@ degrees(const f32 radians) {
 
 template <typename T>
 constexpr Mat4<T>
-scaling(const Vec3<T> s) {
-    return {
-        Vec4<T>(s.x, 0, 0, 0),
-        Vec4<T>(0, s.y, 0, 0),
-        Vec4<T>(0, 0, s.z, 0),
-        Vec4<T>(0, 0, 0, 1),
-    };
-}
-
-template <typename T>
-constexpr Mat4<T>
-translation(const Vec3<T> t) {
-    return {
-        Vec4<T>(1, 0, 0, 0),
-        Vec4<T>(0, 1, 0, 0),
-        Vec4<T>(0, 0, 1, 0),
-        Vec4<T>(t.x, t.y, t.z, 1),
-    };
-}
-
-// TODO: set as constexpr
-template <typename T>
-Mat4<T>
-rotation(const T angle, const Vec3<T> a) {
-    const T ca = cos(angle);
-    const T ca1 = 1 - cos(angle);
-    const T sin_a = sin(angle);
-    const T sax = a.x * sin_a;
-    const T say = a.y * sin_a;
-    const T saz = a.z * sin_a;
-    const T xy = a.x * a.y;
-    const T xz = a.x * a.z;
-    const T yz = a.y * a.z;
-    const T xx = a.x * a.x;
-    const T yy = a.y * a.y;
-    const T zz = a.z * a.z;
-
-    // clang-format off
-    return {
-        ca + xx * ca1,  xy * ca1 + saz, xz * ca1 - say, 0,
-        xy * ca1 - saz, ca + yy * ca1,  yz * ca1 + sax, 0,
-        xz * ca1 + say, yz * ca1 - sax, ca + zz * ca1,  0,
-        0,              0,             0,               1,
-    };
-    // clang-format on
-}
-
-template <typename T>
-constexpr Mat4<T>
 scale(const Mat4<T>& m, const Vec3<T> s) {
-    return m * scaling(s);
+    Mat4f out;
+    out[0] = m[0] * s[0];
+    out[1] = m[1] * s[1];
+    out[2] = m[2] * s[2];
+    out[3] = m[3];
+    return out;
+}
+
+template <typename T>
+constexpr Mat4<T>
+scale(const Mat4<T>& m, const T s) {
+    return scale(m, Vec3<T>(s, s, s));
 }
 
 template <typename T>
 constexpr Mat4<T>
 translate(const Mat4<T>& m, const Vec3<T> t) {
-    return m * translation(t);
+    Mat4f out = m;
+    out[3] = m[0] * t[0] + m[1] * t[1] + m[2] * t[2] + m[3];
+    return out;
 }
 
 // TODO: set as constexpr
 template <typename T>
 Mat4<T>
-rotate(const Mat4<T>& m, const T angle, const Vec3<T> axis) {
-    return m * rotation(angle, axis);
+rotate(const Mat4<T>& m, const T angle, Vec3<T> axis) {
+    const T c = cos(angle);
+    const T s = sin(angle);
+    axis = axis.unit();
+    Vec3f t = { axis * ((T)1 - c) };
+
+    Mat4f r;
+    r[0][0] = c + t[0] * axis[0];
+    r[0][1] = t[0] * axis[1] + s * axis[2];
+    r[0][2] = t[0] * axis[2] - s * axis[1];
+    r[1][0] = t[1] * axis[0] - s * axis[2];
+    r[1][1] = c + t[1] * axis[1];
+    r[1][2] = t[1] * axis[2] + s * axis[0];
+    r[2][0] = t[2] * axis[0] + s * axis[1];
+    r[2][1] = t[2] * axis[1] - s * axis[0];
+    r[2][2] = c + t[2] * axis[2];
+
+    Mat4f out;
+    out[0] = m[0] * r[0][0] + m[1] * r[0][1] + m[2] * r[0][2];
+    out[1] = m[0] * r[1][0] + m[1] * r[1][1] + m[2] * r[1][2];
+    out[2] = m[0] * r[2][0] + m[1] * r[2][1] + m[2] * r[2][2];
+    out[3] = m[3];
+    return out;
 }
 
 } // namespace math

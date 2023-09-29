@@ -102,7 +102,7 @@ union Vec3 {
         return sqrt((x * x) + (y * y) + (z * z));
     }
 
-    constexpr T
+    constexpr Vec3
     unit() const {
         const T len = length();
         return {
@@ -172,7 +172,7 @@ union Vec4 {
         return sqrt((x * x) + (y * y) + (z * z) + (w * w));
     }
 
-    constexpr T
+    constexpr Vec4
     unit() const {
         const T len = length();
         return {
@@ -293,6 +293,12 @@ operator*(const Vec2<T>& a, const T b) {
 }
 
 template <typename T>
+constexpr Vec2<T>
+operator*(const T a, const Vec2<T>& b) {
+    return b * a;
+}
+
+template <typename T>
 constexpr Vec3<T>
 operator*(const Vec3<T>& a, const T b) {
     return {
@@ -300,6 +306,12 @@ operator*(const Vec3<T>& a, const T b) {
         a.y * b,
         a.z * b,
     };
+}
+
+template <typename T>
+constexpr Vec3<T>
+operator*(const T a, const Vec3<T>& b) {
+    return b * a;
 }
 
 template <typename T>
@@ -311,6 +323,12 @@ operator*(const Vec4<T>& a, const T b) {
         a.z * b,
         a.w * b,
     };
+}
+
+template <typename T>
+constexpr Vec4<T>
+operator*(const T b, const Vec4<T>& a) {
+    return b * a;
 }
 
 template <typename T>
