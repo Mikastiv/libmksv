@@ -62,12 +62,12 @@ union Vec2 {
         return sqrt((x * x) + (y * y));
     }
 
-    constexpr T
+    constexpr Vec2
     unit() const {
         const T len = length();
         return {
-            .x = x / len,
-            .y = y / len,
+            x / len,
+            y / len,
         };
     }
 
@@ -123,9 +123,9 @@ union Vec3 {
     unit() const {
         const T len = length();
         return {
-            .x = x / len,
-            .y = y / len,
-            .z = z / len,
+            x / len,
+            y / len,
+            z / len,
         };
     }
 
@@ -137,9 +137,9 @@ union Vec3 {
     constexpr Vec3
     cross(const Vec3& other) const {
         return {
-            .x = (y * other.z) - (z * other.y),
-            .y = (z * other.x) - (x * other.z),
-            .z = (x * other.y) - (y * other.x),
+            (y * other.z) - (z * other.y),
+            (z * other.x) - (x * other.z),
+            (x * other.y) - (y * other.x),
         };
     }
 };
@@ -193,10 +193,10 @@ union Vec4 {
     unit() const {
         const T len = length();
         return {
-            .x = x / len,
-            .y = y / len,
-            .z = z / len,
-            .w = w / len,
+            x / len,
+            y / len,
+            z / len,
+            w / len,
         };
     }
 
@@ -210,8 +210,8 @@ template <typename T>
 constexpr Vec2<T>
 operator+(const Vec2<T>& a, const Vec2<T>& b) {
     return {
-        .x = a.x + b.x,
-        .y = a.y + b.y,
+        a.x + b.x,
+        a.y + b.y,
     };
 }
 
@@ -219,9 +219,9 @@ template <typename T>
 constexpr Vec3<T>
 operator+(const Vec3<T>& a, const Vec3<T>& b) {
     return {
-        .x = a.x + b.x,
-        .y = a.y + b.y,
-        .z = a.z + b.z,
+        a.x + b.x,
+        a.y + b.y,
+        a.z + b.z,
     };
 }
 
@@ -229,10 +229,10 @@ template <typename T>
 constexpr Vec4<T>
 operator+(const Vec4<T>& a, const Vec4<T>& b) {
     return {
-        .x = a.x + b.x,
-        .y = a.y + b.y,
-        .z = a.z + b.z,
-        .w = a.w + b.w,
+        a.x + b.x,
+        a.y + b.y,
+        a.z + b.z,
+        a.w + b.w,
     };
 }
 
@@ -240,8 +240,8 @@ template <typename T>
 constexpr Vec2<T>
 operator-(const Vec2<T>& a, const Vec2<T>& b) {
     return {
-        .x = a.x - b.x,
-        .y = a.y - b.y,
+        a.x - b.x,
+        a.y - b.y,
     };
 }
 
@@ -249,9 +249,9 @@ template <typename T>
 constexpr Vec3<T>
 operator-(const Vec3<T>& a, const Vec3<T>& b) {
     return {
-        .x = a.x - b.x,
-        .y = a.y - b.y,
-        .z = a.z - b.z,
+        a.x - b.x,
+        a.y - b.y,
+        a.z - b.z,
     };
 }
 
@@ -259,10 +259,10 @@ template <typename T>
 constexpr Vec4<T>
 operator-(const Vec4<T>& a, const Vec4<T>& b) {
     return {
-        .x = a.x - b.x,
-        .y = a.y - b.y,
-        .z = a.z - b.z,
-        .w = a.w - b.w,
+        a.x - b.x,
+        a.y - b.y,
+        a.z - b.z,
+        a.w - b.w,
     };
 }
 
@@ -270,8 +270,8 @@ template <typename T>
 constexpr Vec2<T>
 operator-(const Vec2<T>& a) {
     return {
-        .x = -a.x,
-        .y = -a.y,
+        -a.x,
+        -a.y,
     };
 }
 
@@ -279,9 +279,9 @@ template <typename T>
 constexpr Vec3<T>
 operator-(const Vec3<T>& a) {
     return {
-        .x = -a.x,
-        .y = -a.y,
-        .z = -a.z,
+        -a.x,
+        -a.y,
+        -a.z,
     };
 }
 
@@ -289,10 +289,10 @@ template <typename T>
 constexpr Vec4<T>
 operator-(const Vec4<T>& a) {
     return {
-        .x = -a.x,
-        .y = -a.y,
-        .z = -a.z,
-        .w = -a.w,
+        -a.x,
+        -a.y,
+        -a.z,
+        -a.w,
     };
 }
 
@@ -300,8 +300,8 @@ template <typename T>
 constexpr Vec2<T>
 operator*(const Vec2<T>& a, const T b) {
     return {
-        .x = a.x * b,
-        .y = a.y * b,
+        a.x * b,
+        a.y * b,
     };
 }
 
@@ -309,9 +309,9 @@ template <typename T>
 constexpr Vec3<T>
 operator*(const Vec3<T>& a, const T b) {
     return {
-        .x = a.x * b,
-        .y = a.y * b,
-        .z = a.z * b,
+        a.x * b,
+        a.y * b,
+        a.z * b,
     };
 }
 
@@ -319,10 +319,10 @@ template <typename T>
 constexpr Vec4<T>
 operator*(const Vec4<T>& a, const T b) {
     return {
-        .x = a.x * b,
-        .y = a.y * b,
-        .z = a.z * b,
-        .w = a.w * b,
+        a.x * b,
+        a.y * b,
+        a.z * b,
+        a.w * b,
     };
 }
 
@@ -330,8 +330,8 @@ template <typename T>
 constexpr Vec2<T>
 operator/(const Vec2<T>& a, const T b) {
     return {
-        .x = a.x / b,
-        .y = a.y / b,
+        a.x / b,
+        a.y / b,
     };
 }
 
@@ -339,9 +339,9 @@ template <typename T>
 constexpr Vec3<T>
 operator/(const Vec3<T>& a, const T b) {
     return {
-        .x = a.x / b,
-        .y = a.y / b,
-        .z = a.z / b,
+        a.x / b,
+        a.y / b,
+        a.z / b,
     };
 }
 
@@ -349,10 +349,10 @@ template <typename T>
 constexpr Vec4<T>
 operator/(const Vec4<T>& a, const T b) {
     return {
-        .x = a.x / b,
-        .y = a.y / b,
-        .z = a.z / b,
-        .w = a.w / b,
+        a.x / b,
+        a.y / b,
+        a.z / b,
+        a.w / b,
     };
 }
 
@@ -423,7 +423,7 @@ struct Mat3 {
         return e[idx];
     }
 
-    const Vec2<T>&
+    const Vec3<T>&
     operator[](const u64 idx) const {
         assert(idx < 3);
         return e[idx];
@@ -475,7 +475,7 @@ struct Mat4 {
         return e[idx];
     }
 
-    const Vec2<T>&
+    const Vec4<T>&
     operator[](const u64 idx) const {
         assert(idx < 4);
         return e[idx];
@@ -489,107 +489,100 @@ using Mat4f = Mat4<f32>;
 template <typename T>
 constexpr Mat2<T>
 operator+(const Mat2<T>& a, const Mat2<T>& b) {
-    Mat2<T> out;
-    for (u32 j = 0; j < 2; ++j) {
-        for (u32 i = 0; i < 2; ++i) {
-            out[j][i] = a[j][i] + b[j][i];
-        }
-    }
-    return out;
-}
-
-template <typename T>
-constexpr Mat2<T>
-operator-(const Mat2<T>& a, const Mat2<T>& b) {
-    Mat2<T> out;
-    for (u32 j = 0; j < 2; ++j) {
-        for (u32 i = 0; i < 2; ++i) {
-            out[j][i] = a[j][i] - b[j][i];
-        }
-    }
-    return out;
-}
-
-template <typename T>
-constexpr Mat2<T>
-operator*(const Mat2<T>& a, const T b) {
-    Mat2<T> out;
-    for (u32 j = 0; j < 2; ++j) {
-        for (u32 i = 0; i < 2; ++i) {
-            out[j][i] = a[j][i] * b;
-        }
-    }
-    return out;
+    return {
+        a[0] + b[0],
+        a[1] + b[1],
+    };
 }
 
 template <typename T>
 constexpr Mat3<T>
 operator+(const Mat3<T>& a, const Mat3<T>& b) {
-    Mat3<T> out;
-    for (u32 j = 0; j < 3; ++j) {
-        for (u32 i = 0; i < 3; ++i) {
-            out[j][i] = a[j][i] + b[j][i];
-        }
-    }
-    return out;
-}
-
-template <typename T>
-constexpr Mat3<T>
-operator-(const Mat3<T>& a, const Mat3<T>& b) {
-    Mat3<T> out;
-    for (u32 j = 0; j < 3; ++j) {
-        for (u32 i = 0; i < 3; ++i) {
-            out[j][i] = a[j][i] - b[j][i];
-        }
-    }
-    return out;
-}
-
-template <typename T>
-constexpr Mat3<T>
-operator*(const Mat3<T>& a, const T b) {
-    Mat3<T> out;
-    for (u32 j = 0; j < 3; ++j) {
-        for (u32 i = 0; i < 3; ++i) {
-            out[j][i] = a[j][i] * b;
-        }
-    }
-    return out;
+    return {
+        a[0] + b[0],
+        a[1] + b[1],
+        a[2] + b[2],
+    };
 }
 
 template <typename T>
 constexpr Mat4<T>
 operator+(const Mat4<T>& a, const Mat4<T>& b) {
-    Mat4<T> out;
-    for (u32 j = 0; j < 4; ++j) {
-        for (u32 i = 0; i < 4; ++i) {
-            out[j][i] = a[j][i] + b[j][i];
-        }
-    }
-    return out;
+    return {
+        a[0] + b[0],
+        a[1] + b[1],
+        a[2] + b[2],
+        a[3] + b[3],
+    };
+}
+
+template <typename T>
+constexpr Mat2<T>
+operator-(const Mat2<T>& a, const Mat2<T>& b) {
+    return {
+        a[0] - b[0],
+        a[1] - b[1],
+    };
+}
+
+template <typename T>
+constexpr Mat3<T>
+operator-(const Mat3<T>& a, const Mat3<T>& b) {
+    return {
+        a[0] - b[0],
+        a[1] - b[1],
+        a[2] - b[2],
+    };
 }
 
 template <typename T>
 constexpr Mat4<T>
 operator-(const Mat4<T>& a, const Mat4<T>& b) {
-    Mat4<T> out;
-    for (u32 j = 0; j < 4; ++j) {
-        for (u32 i = 0; i < 4; ++i) {
-            out[j][i] = a[j][i] - b[j][i];
-        }
-    }
-    return out;
+    return {
+        a[0] - b[0],
+        a[1] - b[1],
+        a[2] - b[2],
+        a[3] - b[3],
+    };
+}
+
+template <typename T>
+constexpr Mat2<T>
+operator*(const Mat2<T>& a, const T b) {
+    return {
+        a[0] * b,
+        a[1] * b,
+    };
+}
+
+template <typename T>
+constexpr Mat3<T>
+operator*(const Mat3<T>& a, const T b) {
+    return {
+        a[0] * b,
+        a[1] * b,
+        a[2] * b,
+    };
 }
 
 template <typename T>
 constexpr Mat4<T>
 operator*(const Mat4<T>& a, const T b) {
-    Mat4<T> out;
-    for (u32 j = 0; j < 4; ++j) {
-        for (u32 i = 0; i < 4; ++i) {
-            out[j][i] = a[j][i] * b;
-        }
-    }
-    return out;
+    return {
+        a[0] * b,
+        a[1] * b,
+        a[2] * b,
+        a[4] * b,
+    };
+}
+
+template <typename T>
+constexpr Mat2<T>
+operator*(const Mat2<T>& a, const Mat2<T>& b) {
+    return Mat2<T>{
+        (a[0][0] * b[0][0]) + (a[0][1] * b[1][0]),
+        (a[0][0] * b[0][1]) + (a[0][1] * b[1][1]),
+        (a[1][0] * b[0][0]) + (a[1][1] * b[1][0]),
+        (a[1][0] * b[0][1]) + (a[1][1] * b[1][1]),
+    };
 }
