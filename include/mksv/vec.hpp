@@ -358,4 +358,49 @@ operator/(const Vec4<T>& a, const T b) {
         a.w / b,
     };
 }
+
+namespace math {
+template <typename T>
+constexpr Vec2<T>
+normalize(const Vec2<T> v) {
+    return v.unit();
+}
+
+template <typename T>
+constexpr Vec3<T>
+normalize(const Vec3<T> v) {
+    return v.unit();
+}
+
+template <typename T>
+constexpr Vec4<T>
+normalize(const Vec4<T> v) {
+    return v.unit();
+}
+
+template <typename T>
+constexpr Vec2<T>
+dot(const Vec2<T>& a, const Vec2<T>& b) {
+    return a.dot(b);
+}
+
+template <typename T>
+constexpr Vec3<T>
+dot(const Vec3<T>& a, const Vec3<T>& b) {
+    return a.dot(b);
+}
+
+template <typename T>
+constexpr Vec4<T>
+dot(const Vec4<T>& a, const Vec4<T>& b) {
+    return a.dot(b);
+}
+
+template <typename T>
+constexpr Vec3<T>
+cross(const Vec3<T>& a, const Vec3<T>& b) {
+    return a.cross(b);
+}
+
+} // namespace math
 } // namespace mksv
