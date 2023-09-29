@@ -170,3 +170,8 @@ operator/(const Vec4<T>& a, const T& b) {
         .w = a.w / b,
     };
 }
+
+template <typename T>
+struct Mat4 {
+    Vec4<T> e[4];
+};
