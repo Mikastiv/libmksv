@@ -419,8 +419,8 @@ perspective(const T fovy, const T aspect, const T n, const T f) {
 
 template <typename T>
 constexpr Mat4<T>
-look_at(const Vec3<T>& pos, const Vec3<T>& eye, const Vec3<T>& up) {
-    const Vec3<T> dir = normalize(pos - eye);
+look_at(const Vec3<T>& eye, const Vec3<T>& target, const Vec3<T>& up) {
+    const Vec3<T> dir = normalize(target - eye);
     const Vec3<T> right = normalize(cross(dir, up));
     const Vec3<T> u = cross(right, dir);
 

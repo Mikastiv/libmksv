@@ -379,19 +379,19 @@ normalize(const Vec4<T> v) {
 }
 
 template <typename T>
-constexpr Vec2<T>
+constexpr T
 dot(const Vec2<T>& a, const Vec2<T>& b) {
     return a.dot(b);
 }
 
 template <typename T>
-constexpr Vec3<T>
+constexpr T
 dot(const Vec3<T>& a, const Vec3<T>& b) {
     return a.dot(b);
 }
 
 template <typename T>
-constexpr Vec4<T>
+constexpr T
 dot(const Vec4<T>& a, const Vec4<T>& b) {
     return a.dot(b);
 }
