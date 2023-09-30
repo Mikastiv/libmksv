@@ -15,5 +15,5 @@ using i64 = int64_t;
 using f32 = float;
 using f64 = double;
 
-constexpr f32 PI = 3.14159265358979323846264338327950288419716939937510f;
+constexpr f32 PI = 3.14159265358979323846264338328f;
 constexpr f32 TAU = 2.0f * PI;
