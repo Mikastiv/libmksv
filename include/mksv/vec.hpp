@@ -7,11 +7,11 @@ namespace mksv {
 template <typename T>
 union Vec2 {
     struct {
-        T x = 0;
-        T y = 0;
+        T x;
+        T y;
     };
 
-    T e[2];
+    T e[2] = {};
 
     constexpr Vec2() {
     }
@@ -61,12 +61,12 @@ union Vec2 {
 template <typename T>
 union Vec3 {
     struct {
-        T x = 0;
-        T y = 0;
-        T z = 0;
+        T x;
+        T y;
+        T z;
     };
 
-    T e[3];
+    T e[3] = {};
 
     constexpr Vec3() {
     }
@@ -128,13 +128,13 @@ union Vec3 {
 template <typename T>
 union Vec4 {
     struct {
-        T x = 0;
-        T y = 0;
-        T z = 0;
-        T w = 0;
+        T x;
+        T y;
+        T z;
+        T w;
     };
 
-    T e[4];
+    T e[4] = {};
 
     constexpr Vec4() {
     }

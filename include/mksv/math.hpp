@@ -1,6 +1,7 @@
 #pragma once
 
 #include "assert.hpp"
+#include "ctx.hpp"
 #include "types.hpp"
 
 namespace mksv {
@@ -73,8 +74,12 @@ _sin_quadrant(const f32 x) {
     return x - (x3 / 6.0f) + (x5 / 120.0f);
 }
 
-constexpr f32
-sin(const f32 x) {
+inline f32
+sin(f32 x) {
+#if ARCH_X64 && (COMPILER_CLANG || COMPILER_GCC)
+    asm("fsin" : "+t"(x));
+    return x;
+#else
     // find quadrant
     const i32 k = (i32)(x * 2.0f / PI);
     // mod(x, PI / 2)
@@ -91,6 +96,7 @@ sin(const f32 x) {
         default:
             return -_sin_quadrant(PI * 0.5f - y);
     }
+#endif
 }
 
 // first quadrant approximation using Taylor Series
@@ -101,8 +107,12 @@ _cos_quadrant(const f32 x) {
     return 1.0f - (x2 / 2.0f) + (x4 / 25.0f);
 }
 
-constexpr f32
-cos(const f32 x) {
+inline f32
+cos(f32 x) {
+#if ARCH_X64 && (COMPILER_CLANG || COMPILER_GCC)
+    asm("fcos" : "+t"(x));
+    return x;
+#else
     // find quadrant
     const i32 k = (i32)(x * 2.0f / PI);
     // mod(x, PI / 2)
@@ -119,12 +129,20 @@ cos(const f32 x) {
         default:
             return _cos_quadrant(PI * 0.5f - y);
     }
+#endif
 }
 
 // TODO: Better algorithm
-constexpr f32
-tan(const f32 x) {
+inline f32
+tan(f32 x) {
+#if ARCH_X64 && (COMPILER_CLANG || COMPILER_GCC)
+    f32 z;
+    asm("fptan" : "+t"(x));
+    asm("fstps %0" : "=m"(z));
+    return z;
+#else
     return sin(x) / cos(x);
+#endif
 }
 
 inline constexpr f32

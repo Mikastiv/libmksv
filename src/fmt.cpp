@@ -236,7 +236,7 @@ get_base_characters(const FormatBase base) {
             return "01234567";
         case FormatBase::Binary:
             return "01";
-        case FormatBase::Unknown:
+        default:
             return "U";
     }
 }
