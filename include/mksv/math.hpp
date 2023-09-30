@@ -145,10 +145,15 @@ tan(f32 x) {
 #endif
 }
 
-inline constexpr f32
-sqrt(const f32 x) {
+inline f32
+sqrt(f32 x) {
     assert(x > 0.0f);
 
+#if ARCH_X64 && (COMPILER_CLANG || COMPILER_GCC)
+    float z;
+    asm("sqrtss %x1, %x0" : "=x"(z) : "x"(x));
+    return z;
+#else
     union {
         f32 f;
         u32 i;
@@ -166,6 +171,7 @@ sqrt(const f32 x) {
     }
 
     return y;
+#endif
 }
 
 } // namespace math
