@@ -11,7 +11,7 @@ struct ArrayList {
     mem::Slice<T> items;
     u64 size;
 
-    [[nodiscard]] static ArrayList
+    static ArrayList
     init(const mem::Allocator allocator) {
         return {
             .allocator = allocator,

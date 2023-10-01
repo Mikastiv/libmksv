@@ -420,24 +420,46 @@ perspective(const T fovy, const T aspect, const T n, const T f) {
 template <typename T>
 constexpr Mat4<T>
 look_at(const Vec3<T>& eye, const Vec3<T>& target, const Vec3<T>& up) {
-    const Vec3<T> dir = normalize(target - eye);
-    const Vec3<T> right = normalize(cross(dir, up));
-    const Vec3<T> u = cross(right, dir);
+    const Vec3<T> zaxis = normalize(target - eye);
+    const Vec3<T> xaxis = normalize(cross(up, zaxis));
+    const Vec3<T> yaxis = cross(zaxis, xaxis);
 
-    Mat4<T> out = { (T)1 };
-    out[0][0] = right.x;
-    out[1][0] = right.y;
-    out[2][0] = right.z;
-    out[0][1] = u.x;
-    out[1][1] = u.y;
-    out[2][1] = u.z;
-    out[0][2] = -dir.x;
-    out[1][2] = -dir.y;
-    out[2][2] = -dir.z;
-    out[3][0] = -dot(right, eye);
-    out[3][1] = -dot(u, eye);
-    out[3][2] = dot(dir, eye);
-    return out;
+    Mat4<T> translation = { (T)1 };
+    translation[3][0] = -eye.x;
+    translation[3][1] = -eye.y;
+    translation[3][2] = -eye.z;
+
+    Mat4<T> rotation = { (T)1 };
+    rotation[0][0] = -xaxis.x;
+    rotation[1][0] = -xaxis.y;
+    rotation[2][0] = -xaxis.z;
+    rotation[0][1] = yaxis.x;
+    rotation[1][1] = yaxis.y;
+    rotation[2][1] = yaxis.z;
+    rotation[0][2] = -zaxis.x;
+    rotation[1][2] = -zaxis.y;
+    rotation[2][2] = -zaxis.z;
+
+    return rotation * translation;
+
+    // const Vec3<T> zaxis = normalize(target - eye);
+    // const Vec3<T> xaxis = normalize(cross(zaxis, up));
+    // const Vec3<T> yaxis = cross(xaxis, zaxis);
+
+    // Mat4<T> out = { (T)1 };
+    // out[0][0] = xaxis.x;
+    // out[1][0] = xaxis.y;
+    // out[2][0] = xaxis.z;
+    // out[0][1] = yaxis.x;
+    // out[1][1] = yaxis.y;
+    // out[2][1] = yaxis.z;
+    // out[0][2] = -zaxis.x;
+    // out[1][2] = -zaxis.y;
+    // out[2][2] = -zaxis.z;
+    // out[3][0] = -dot(xaxis, eye);
+    // out[3][1] = -dot(yaxis, eye);
+    // out[3][2] = dot(zaxis, eye);
+    // return out;
 }
 
 } // namespace math
