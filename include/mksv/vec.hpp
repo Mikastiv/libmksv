@@ -56,6 +56,11 @@ union Vec2 {
     dot(const Vec2& other) const {
         return (x * other.x) + (y * other.y);
     }
+
+    T*
+    ptr() const {
+        return (T*)&e[0];
+    }
 };
 
 template <typename T>
@@ -123,6 +128,11 @@ union Vec3 {
             (x * other.y) - (y * other.x),
         };
     }
+
+    T*
+    ptr() const {
+        return (T*)&e[0];
+    }
 };
 
 template <typename T>
@@ -184,6 +194,11 @@ union Vec4 {
     constexpr T
     dot(const Vec4& other) const {
         return (x * other.x) + (y * other.y) + (z * other.z) + (w * other.w);
+    }
+
+    T*
+    ptr() const {
+        return (T*)&e[0];
     }
 };
 
