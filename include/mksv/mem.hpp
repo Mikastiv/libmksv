@@ -70,6 +70,13 @@ equal(const Slice<T> a, const Slice<T> b) {
 
 template <typename T>
 constexpr bool
+ends_with(const Slice<T> a, const Slice<T> b) {
+    if (a.len < b.len) return false;
+    return equal(Slice<T>(a.ptr + a.len - b.len, b.len), b);
+}
+
+template <typename T>
+constexpr bool
 is_delimiter(const Slice<T> slice, const Slice<T> delimiter, const u64 index) {
     if (index + delimiter.len > slice.len) return false;
     return equal(slice.sub(index, index + delimiter.len), delimiter);
