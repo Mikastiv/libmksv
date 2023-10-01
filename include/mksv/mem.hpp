@@ -77,9 +77,18 @@ ends_with(const Slice<T> a, const Slice<T> b) {
 
 template <typename T>
 constexpr bool
-is_delimiter(const Slice<T> slice, const Slice<T> delimiter, const u64 index) {
-    if (index + delimiter.len > slice.len) return false;
-    return equal(slice.sub(index, index + delimiter.len), delimiter);
+is_delimiter(const Slice<T> slice, const Slice<T> delimiter, const u64 index, const bool any) {
+    const u64 len = any ? 1 : delimiter.len;
+    if (index + len > slice.len) return false;
+
+    // match whole delimiter
+    if (!any) return equal(slice.sub(index, index + delimiter.len), delimiter);
+
+    // match any character
+    for (u64 i = 0; i < delimiter.len; ++i) {
+        if (delimiter.ptr[i] == *slice.sub(index, index + 1).ptr) return true;
+    }
+    return false;
 }
 
 template <typename T>
@@ -87,18 +96,21 @@ struct TokenIter {
     Slice<T> buffer;
     Slice<T> delimiter;
     u64 index;
+    bool any;
 
     [[nodiscard]] constexpr bool
     next(Slice<T>* value) {
-        while (index < buffer.len && is_delimiter(buffer, delimiter, index)) {
-            index += delimiter.len;
+        const u64 len = any ? 1 : delimiter.len;
+
+        while (index < buffer.len && is_delimiter(buffer, delimiter, index, any)) {
+            index += len;
         }
 
         if (index == buffer.len) return false;
 
         const u64 start = index;
         u64 end = start;
-        while (end < buffer.len && !is_delimiter(buffer, delimiter, end)) ++end;
+        while (end < buffer.len && !is_delimiter(buffer, delimiter, end, any)) ++end;
 
         index += end - start;
 
@@ -110,18 +122,19 @@ struct TokenIter {
 
 template <typename T>
 TokenIter<T>
-tokenize(const Slice<T> slice, const Slice<T> delimiter) {
+tokenize(const Slice<T> slice, const Slice<T> delimiter, const bool any) {
     return {
         .buffer = slice,
         .delimiter = delimiter,
         .index = 0,
+        .any = any,
     };
 }
 
 template <typename T>
 [[nodiscard]] constexpr bool
-tokenize_once(const Slice<T> slice, const Slice<T> delimiter, Slice<T>* token) {
-    auto it = tokenize(slice, delimiter);
+tokenize_once(const Slice<T> slice, const Slice<T> delimiter, const bool any, Slice<T>* token) {
+    auto it = tokenize(slice, delimiter, any);
     return it.next(token);
 }
 
@@ -130,30 +143,33 @@ struct RevTokenIter {
     Slice<T> buffer;
     Slice<T> delimiter;
     u64 index;
+    bool any;
     bool done = false;
 
     [[nodiscard]] constexpr bool
     next(Slice<T>* value) {
+        const u64 len = any ? 1 : delimiter.len;
+
         if (done) return false;
 
         u64 end = index;
 
-        while (index != 0 && is_delimiter(buffer, delimiter, index)) {
-            if (index < delimiter.len)
+        while (index != 0 && is_delimiter(buffer, delimiter, index, any)) {
+            if (index < len)
                 index = 0;
             else
-                index -= delimiter.len;
+                index -= len;
         }
 
         if (end != index) end = index + 1;
 
         u64 start = index;
-        while (start != 0 && !is_delimiter(buffer, delimiter, start)) --start;
+        while (start != 0 && !is_delimiter(buffer, delimiter, start, any)) --start;
 
         index = start;
         if (index == 0) done = true;
 
-        *value = buffer.sub(start + (start == 0 ? 0 : delimiter.len), end);
+        *value = buffer.sub(start + (start == 0 ? 0 : len), end);
 
         return true;
     }
@@ -161,18 +177,24 @@ struct RevTokenIter {
 
 template <typename T>
 RevTokenIter<T>
-reverse_tokenize(const Slice<T> slice, const Slice<T> delimiter) {
+reverse_tokenize(const Slice<T> slice, const Slice<T> delimiter, const bool any) {
     return {
         .buffer = slice,
         .delimiter = delimiter,
         .index = slice.len,
+        .any = any,
     };
 }
 
 template <typename T>
 [[nodiscard]] constexpr bool
-reverse_tokenize_once(const Slice<T> slice, const Slice<T> delimiter, Slice<T>* token) {
-    auto it = reverse_tokenize(slice, delimiter);
+reverse_tokenize_once(
+    const Slice<T> slice,
+    const Slice<T> delimiter,
+    const bool any,
+    Slice<T>* token
+) {
+    auto it = reverse_tokenize(slice, delimiter, any);
     return it.next(token);
 }
 
@@ -181,17 +203,20 @@ struct SplitIter {
     Slice<T> buffer;
     Slice<T> delimiter;
     u64 index;
+    bool any;
 
     [[nodiscard]] constexpr bool
     next(Slice<T>* value) {
+        const u64 len = any ? 1 : delimiter.len;
+
         if (index == buffer.len) return false;
 
         const u64 start = index;
         u64 end = start;
-        while (end < buffer.len && !is_delimiter(buffer, delimiter, end)) ++end;
+        while (end < buffer.len && !is_delimiter(buffer, delimiter, end, any)) ++end;
 
         index += end - start;
-        index = math::min(buffer.len, index + 1);
+        index = math::min(buffer.len, index + len);
 
         *value = buffer.sub(start, end);
 
@@ -201,18 +226,19 @@ struct SplitIter {
 
 template <typename T>
 SplitIter<T>
-split(const Slice<T> slice, const Slice<T> delimiter) {
+split(const Slice<T> slice, const Slice<T> delimiter, const bool any) {
     return {
         .buffer = slice,
         .delimiter = delimiter,
         .index = 0,
+        .any = any,
     };
 }
 
 template <typename T>
 [[nodiscard]] constexpr bool
-split_once(const Slice<T> slice, const Slice<T> delimiter, Slice<T>* token) {
-    auto it = split(slice, delimiter);
+split_once(const Slice<T> slice, const Slice<T> delimiter, const bool any, Slice<T>* token) {
+    auto it = split(slice, delimiter, any);
     return it.next(token);
 }
 
