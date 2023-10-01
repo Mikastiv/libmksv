@@ -119,6 +119,64 @@ tokenize(const Slice<T> slice, const Slice<T> delimiter) {
 }
 
 template <typename T>
+[[nodiscard]] constexpr bool
+tokenize_once(const Slice<T> slice, const Slice<T> delimiter, Slice<T>* token) {
+    auto it = tokenize(slice, delimiter);
+    return it.next(token);
+}
+
+template <typename T>
+struct RevTokenIter {
+    Slice<T> buffer;
+    Slice<T> delimiter;
+    u64 index;
+    bool done = false;
+
+    [[nodiscard]] constexpr bool
+    next(Slice<T>* value) {
+        if (done) return false;
+
+        u64 end = index;
+
+        while (index != 0 && is_delimiter(buffer, delimiter, index)) {
+            if (index < delimiter.len)
+                index = 0;
+            else
+                index -= delimiter.len;
+        }
+
+        if (end != index) end = index + 1;
+
+        u64 start = index;
+        while (start != 0 && !is_delimiter(buffer, delimiter, start)) --start;
+
+        index = start;
+        if (index == 0) done = true;
+
+        *value = buffer.sub(start + (start == 0 ? 0 : delimiter.len), end);
+
+        return true;
+    }
+};
+
+template <typename T>
+RevTokenIter<T>
+reverse_tokenize(const Slice<T> slice, const Slice<T> delimiter) {
+    return {
+        .buffer = slice,
+        .delimiter = delimiter,
+        .index = slice.len,
+    };
+}
+
+template <typename T>
+[[nodiscard]] constexpr bool
+reverse_tokenize_once(const Slice<T> slice, const Slice<T> delimiter, Slice<T>* token) {
+    auto it = reverse_tokenize(slice, delimiter);
+    return it.next(token);
+}
+
+template <typename T>
 struct SplitIter {
     Slice<T> buffer;
     Slice<T> delimiter;
@@ -149,6 +207,13 @@ split(const Slice<T> slice, const Slice<T> delimiter) {
         .delimiter = delimiter,
         .index = 0,
     };
+}
+
+template <typename T>
+[[nodiscard]] constexpr bool
+split_once(const Slice<T> slice, const Slice<T> delimiter, Slice<T>* token) {
+    auto it = split(slice, delimiter);
+    return it.next(token);
 }
 
 using AllocFn = bool (*)(void*, const u64, const u64, Slice<u8>* out_block);
