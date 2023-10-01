@@ -285,16 +285,19 @@ struct Allocator {
     }
 };
 
-// TODO: check alignment is power of 2
 template <typename T>
 constexpr T
 align_down(const T addr, const T alignment) {
+    assert(alignment != 0);
+    assert((alignment & (alignment - 1)) == 0);
     return addr & ~(alignment - 1);
 }
 
 template <typename T>
 constexpr T
 align_up(const T addr, const T alignment) {
+    assert(alignment != 0);
+    assert((alignment & (alignment - 1)) == 0);
     const T mask = alignment - 1;
     return (addr + mask) & ~mask;
 }
