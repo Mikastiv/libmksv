@@ -257,7 +257,7 @@ format(const Str buffer, const Str fmt) {
 // Format string
 // Syntax: {[type]:[base]}
 //
-// type: s for string; u8, u16, i8, i16, etc, for integers; p for address
+// type: s for Str type; u8, u16, i8, i16, etc, for integers; p for address
 //
 // base: d for decimal, o for octal, b for binary, x or X for hexadecimal
 template <typename T, typename... Args>
