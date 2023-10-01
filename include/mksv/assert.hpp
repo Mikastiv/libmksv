@@ -1,8 +1,12 @@
 #pragma once
 
-// #define assert(expr)                                                           \
-//     if (!(expr)) {                                                             \
-//         *(volatile char*)0 = 0;                                                         \
-//     }
+#include "types.hpp"
 
-#include <assert.h>
+namespace mksv {
+
+void
+assert_message(const char* expr, const char* file, const u64 line_number);
+
+} // namespace mksv
+
+#define assert(expr) (void)((!!(expr)) || (mksv::assert_message((#expr), __FILE__, __LINE__), 0))
