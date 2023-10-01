@@ -38,6 +38,30 @@ union Vec2 {
         return e[idx];
     }
 
+    Vec2&
+    operator+=(const Vec2& other) {
+        *this = *this + other;
+        return *this;
+    }
+
+    Vec2&
+    operator-=(const Vec2& other) {
+        *this = *this - other;
+        return *this;
+    }
+
+    Vec2&
+    operator*=(const T other) {
+        *this = *this * other;
+        return *this;
+    }
+
+    Vec2&
+    operator/=(const T other) {
+        *this = *this / other;
+        return *this;
+    }
+
     constexpr T
     length() const {
         return sqrt((x * x) + (y * y));
@@ -98,6 +122,30 @@ union Vec3 {
     operator[](const u64 idx) const {
         assert(idx < 3);
         return e[idx];
+    }
+
+    Vec3&
+    operator+=(const Vec3& other) {
+        *this = *this + other;
+        return *this;
+    }
+
+    Vec3&
+    operator-=(const Vec3& other) {
+        *this = *this - other;
+        return *this;
+    }
+
+    Vec3&
+    operator*=(const T other) {
+        *this = *this * other;
+        return *this;
+    }
+
+    Vec3&
+    operator/=(const T other) {
+        *this = *this / other;
+        return *this;
     }
 
     constexpr T
@@ -173,6 +221,30 @@ union Vec4 {
     operator[](const u64 idx) const {
         assert(idx < 4);
         return e[idx];
+    }
+
+    Vec4&
+    operator+=(const Vec4& other) {
+        *this = *this + other;
+        return *this;
+    }
+
+    Vec4&
+    operator-=(const Vec4& other) {
+        *this = *this - other;
+        return *this;
+    }
+
+    Vec4&
+    operator*=(const T other) {
+        *this = *this * other;
+        return *this;
+    }
+
+    Vec4&
+    operator/=(const T other) {
+        *this = *this / other;
+        return *this;
     }
 
     constexpr T
