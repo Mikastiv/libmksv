@@ -90,6 +90,11 @@ struct ArrayList {
     }
 
     void
+    clear() {
+        size = 0;
+    }
+
+    void
     deinit() {
         allocator.free(items);
         items = {};
