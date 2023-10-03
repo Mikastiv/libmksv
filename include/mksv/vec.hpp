@@ -211,6 +211,22 @@ union Vec4 {
           w{ w } {
     }
 
+    constexpr Vec4(const Vec3<T>& v, const T w)
+        : x{ v.x },
+          y{ v.y },
+          z{ v.z },
+          w{ w } {
+    }
+
+    constexpr
+    operator Vec3<T>() const {
+        return {
+            x,
+            y,
+            z,
+        };
+    }
+
     T&
     operator[](const u64 idx) {
         assert(idx < 4);
