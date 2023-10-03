@@ -106,6 +106,19 @@ struct ArrayList {
         return math::MAX_U64 / sizeof(T);
     }
 
+    [[nodiscard]] bool
+    clone(ArrayList* out) const {
+        ArrayList copy = init(allocator);
+
+        if (!copy.allocator.alloc(items.len, &copy.items)) return false;
+        mem::copy(copy.items, items);
+        copy.size = size;
+
+        *out = copy;
+
+        return true;
+    }
+
 private:
     constexpr u64
     calculate_new_size(const u64 added_size) const {
