@@ -2,6 +2,7 @@
 
 #include "assert.hpp"
 #include "ctx.hpp"
+#include "float.hpp"
 #include "types.hpp"
 
 namespace mksv {
@@ -110,11 +111,23 @@ _cos_quadrant(const f32 x) {
 inline f32
 cos(f32 x) {
 #if ARCH_X64 && (COMPILER_CLANG || COMPILER_GCC)
+    // constexpr f32 ROUND_TO_INT = 1.5f / flt::F32_EPSILON;
+    // constexpr f32 K1 = 6.28125f * 0.25f;
+    // constexpr f32 K2 = 1.9352435546875e-3f * 0.25f;
+    // constexpr f32 K3 = 6.3624898976925e-8f * 0.25f;
+
+    // const i32 k = (i32)((x * 2.0f / PI) - ROUND_TO_INT + ROUND_TO_INT);
+    // i32 quadrant = k % 4;
+    // if (quadrant < 0.0f) quadrant += 3;
+
+    // const f32 xabs = flt::abs_f32(x);
+    // const f32 y = ((xabs - K1 * quadrant) - K2 * quadrant) - K3 * quadrant;
+
     asm("fcos" : "+t"(x));
     return x;
 #else
     // find quadrant
-    const i32 k = (i32)(x * 2.0f / PI);
+    const i32 k = (x * 2.0f / PI) - ROUND_TO_INT + ROUND_TO_INT;
     // mod(x, PI / 2)
     const f32 y = x - (k * PI * 0.5f);
 
