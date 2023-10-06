@@ -14,22 +14,33 @@
 namespace mksv {
 namespace heap {
 
-static constexpr u64
-os_page_granularity() {
-#if OS_WINDOWS | OS_MACOS | OS_LINUX
-    return math::kilo_bytes(4);
+static struct OsCtx {
+    u64 allocation_granularity;
+    bool is_init = false;
+} os_ctx;
+
+static void
+init_ctx(OsCtx* ctx) {
+#if OS_WINDOWS
+    SYSTEM_INFO sys_info = {};
+    GetSystemInfo(&sys_info);
+
+    ctx->allocation_granularity = (u64)sys_info.dwAllocationGranularity;
+    ctx->is_init = true;
+#elif OS_MACOS
+
+#elif OS_LINUX
+
 #endif
 }
 
-static struct OsCtx {
-} os_ctx;
-
 static bool
 os_allocate(void* ctx, const u64 size, const u64 alignment, mem::Slice<u8>* out_block) {
-    (void)ctx;
+    OsCtx* ctx_ptr = (OsCtx*)ctx;
+    if (!ctx_ptr->is_init) init_ctx(ctx_ptr);
 
 #if OS_WINDOWS
-    u64 aligned_size = mem::align_up<u64>(size, os_page_granularity());
+    u64 aligned_size = mem::align_up<u64>(size, ctx_ptr->allocation_granularity);
     aligned_size = mem::align_up<u64>(aligned_size, alignment);
 
     void* block = VirtualAlloc(nullptr, aligned_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
@@ -69,6 +80,7 @@ os_free(void* ctx, void* ptr, const u64 size, const u64 alignment) {
     (void)alignment;
 
 #if OS_WINDOWS
+    (void)size;
     VirtualFree(ptr, 0, MEM_RELEASE);
 #elif OS_MACOS
     munmap(ptr, size);
