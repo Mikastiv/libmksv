@@ -1,7 +1,6 @@
 #include "heap.hpp"
 
 #include "ctx.hpp"
-#include "math.hpp"
 #include "mem.hpp"
 
 #if OS_WINDOWS
@@ -40,8 +39,8 @@ os_allocate(void* ctx, const u64 size, const u64 alignment, mem::Slice<u8>* out_
     if (!ctx_ptr->is_init) init_ctx(ctx_ptr);
 
 #if OS_WINDOWS
-    u64 aligned_size = mem::align_up<u64>(size, ctx_ptr->allocation_granularity);
-    aligned_size = mem::align_up<u64>(aligned_size, alignment);
+    u64 aligned_size = mem::align_up(size, ctx_ptr->allocation_granularity);
+    aligned_size = mem::align_up(aligned_size, alignment);
 
     void* block = VirtualAlloc(nullptr, aligned_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
     if (block == nullptr) return false;
@@ -49,8 +48,8 @@ os_allocate(void* ctx, const u64 size, const u64 alignment, mem::Slice<u8>* out_
     *out_block = mem::Slice<u8>{ (u8*)block, aligned_size };
     return true;
 #elif OS_MACOS
-    u64 aligned_size = mem::align_up<u64>(size, os_page_granularity());
-    aligned_size = mem::align_up<u64>(aligned_size, alignment);
+    u64 aligned_size = mem::align_up(size, os_page_granularity());
+    aligned_size = mem::align_up(aligned_size, alignment);
 
     void* block =
         mmap(nullptr, aligned_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
