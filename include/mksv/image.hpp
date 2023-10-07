@@ -1,0 +1,21 @@
+#pragma once
+
+#include <mem.hpp>
+
+namespace mksv {
+
+struct Image {
+    u64 width;
+    u64 height;
+    u64 bpp;
+    mem::Slice<u32> pixels;
+};
+
+namespace img {
+
+[[nodiscard]] bool
+load_tga(const mem::Allocator allocator, const Str filename, Image* out_image);
+
+}
+
+} // namespace mksv
