@@ -86,7 +86,14 @@ struct ArrayList {
 
     T*
     last() {
+        assert(size > 0);
         return items.ptr + size - 1;
+    }
+
+    T*
+    first() {
+        assert(size > 0);
+        return items.ptr;
     }
 
     void
@@ -117,6 +124,18 @@ struct ArrayList {
         *out = copy;
 
         return true;
+    }
+
+    T&
+    operator[](const u64 idx) {
+        assert(idx < size);
+        return items.ptr[idx];
+    }
+
+    const T&
+    operator[](const u64 idx) const {
+        assert(idx < size);
+        return items.ptr[idx];
     }
 
 private:

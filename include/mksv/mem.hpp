@@ -23,7 +23,7 @@ struct Slice {
 
     static constexpr Slice
     null() {
-        return Slice{ nullptr, 0 };
+        return {};
     }
 
     constexpr Slice() {
