@@ -8,6 +8,7 @@
 #endif
 #if OS_MACOS
 #include <sys/mman.h>
+#include <unistd.h>
 #endif
 
 namespace mksv {
@@ -27,7 +28,8 @@ init_ctx(OsCtx* ctx) {
     ctx->allocation_granularity = (u64)sys_info.dwAllocationGranularity;
     ctx->is_init = true;
 #elif OS_MACOS
-
+    ctx->allocation_granularity = (u64)getpagesize();
+    ctx->is_init = true;
 #elif OS_LINUX
 
 #endif
@@ -48,7 +50,7 @@ os_allocate(void* ctx, const u64 size, const u64 alignment, mem::Slice<u8>* out_
     *out_block = mem::Slice<u8>{ (u8*)block, aligned_size };
     return true;
 #elif OS_MACOS
-    u64 aligned_size = mem::align_up(size, os_page_granularity());
+    u64 aligned_size = mem::align_up(size, ctx_ptr->allocation_granularity);
     aligned_size = mem::align_up(aligned_size, alignment);
 
     void* block =

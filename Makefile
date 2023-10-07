@@ -4,6 +4,8 @@ SRC_DIR		=	src
 INC_DIR		=	include/mksv
 OBJ_DIR		=	obj
 
+OS			= $(shell uname -s)
+
 DIRS		=	$(shell find $(SRC_DIR) -type d)
 INCS		=	$(shell find $(INC_DIR) -type f -name "*.hpp")
 SRCS		=	$(shell find $(SRC_DIR) -type f -name "*.cpp")
@@ -19,8 +21,16 @@ AR			=	ar rcs
 RM			=	rm -rf
 MKDIR		=	mkdir -p
 
+ifeq ($(OS),Linux)
+SDK_PATH	=
+else ifeq ($(OS),Darwin)
+SDK_PATH	=	$(shell xcrun --show-sdk-path)
+else
+SDK_PATH	=
+endif
+
 $(OBJ_DIR)/%.cpp.o:	%.cpp
-	$(CXX) $(CXXFLAGS) -c -I$(INC_DIR) $< -o $@
+	$(CXX) $(CXXFLAGS) -c -I$(INC_DIR) -isystem$(SDK_PATH)/usr/include $< -o $@
 
 all:		debug
 
