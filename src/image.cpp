@@ -1,8 +1,8 @@
 #include "image.hpp"
 
-#include "io.hpp"
-
 #include "fmt.hpp"
+#include "io.hpp"
+#include "utils.hpp"
 
 namespace mksv {
 namespace img {
@@ -139,12 +139,13 @@ load_bmp(const mem::Allocator allocator, const Str filename, Image* out_image) {
         return false;
     }
 
-    const u32 stride = mem::align_up<u32>((header->bpp / 8) * (u32)header->width, 4);
+    const bool flipped = header->height < 0;
+    const u32 stride = mem::align_up<u32>(header->bpp * (u32)header->width / 32, 4);
     u32* pixel_row = (u32*)(image_data.ptr + bmp_header->image_offset);
 
     Image img = {
         .width = (u32)header->width,
-        .height = (u32)header->height,
+        .height = flipped ? (u32)-header->height : (u32)header->height,
         .bpp = header->bpp,
     };
     if (!allocator.alloc(stride * img.height, &img.pixels)) {
@@ -152,18 +153,26 @@ load_bmp(const mem::Allocator allocator, const Str filename, Image* out_image) {
         return false;
     }
 
+    if (flipped) pixel_row += stride * (img.height - 1);
+    const u32 r_shift = clz(header->red_mask);
+    const u32 g_shift = clz(header->green_mask);
+    const u32 b_shift = clz(header->blue_mask);
+    const u32 a_shift = clz(header->alpha_mask);
+
     for (u64 j = 0; j < img.height; ++j) {
         for (u64 i = 0; i < img.width; ++i) {
             const u32 pixel = pixel_row[i];
-            const u32 r = pixel & header->red_mask;
-            const u32 g = pixel & header->green_mask;
-            const u32 b = pixel & header->blue_mask;
-            const u32 a = pixel & header->alpha_mask;
-            const u32 out = (b << 24) | (g << 16) | (r << 8) | a;
-            (void)out;
-            img.pixels.ptr[j * img.width + i] = pixel;
+            const u32 r = (pixel & header->red_mask) >> r_shift;
+            const u32 g = (pixel & header->green_mask) >> g_shift;
+            const u32 b = (pixel & header->blue_mask) >> b_shift;
+            const u32 a = (pixel & header->alpha_mask) >> a_shift;
+            const u32 out = (a << 24) | (b << 16) | (g << 8) | r;
+            img.pixels.ptr[j * img.width + i] = out;
         }
-        pixel_row += stride;
+        if (flipped)
+            pixel_row -= stride;
+        else
+            pixel_row += stride;
     }
 
     *out_image = img;

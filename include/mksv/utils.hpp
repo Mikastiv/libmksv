@@ -28,9 +28,45 @@ _defer_func(F func) {
     return _Defer<F>(func);
 }
 
-constexpr bool
+inline constexpr bool
 is_digit(const u8 c) {
     return (c >= '0' && c <= '9');
+}
+
+inline constexpr u32
+clz(u32 x) {
+    if (x == 0) return 32;
+
+    u32 n = 31;
+
+    u32 y = x << 16;
+    if (y != 0) {
+        n -= 16;
+        x = y;
+    }
+
+    y = x << 8;
+    if (y != 0) {
+        n -= 8;
+        x = y;
+    }
+
+    y = x << 4;
+    if (y != 0) {
+        n -= 4;
+        x = y;
+    }
+
+    y = x << 2;
+    if (y != 0) {
+        n -= 2;
+        x = y;
+    }
+
+    y = x << 1;
+    if (y != 0) n -= 1;
+
+    return n;
 }
 
 } // namespace mksv
