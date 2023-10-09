@@ -19,6 +19,6 @@ load_tga(const mem::Allocator allocator, const Str filename, Image* out_image);
 [[nodiscard]] bool
 load_bmp(const mem::Allocator allocator, const Str filename, Image* out_image);
 
-}
+} // namespace img
 
 } // namespace mksv

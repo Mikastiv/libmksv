@@ -118,6 +118,12 @@ struct TokenIter {
 
         return true;
     }
+
+    [[nodiscard]] constexpr bool
+    peek(Slice<T>* value) {
+        auto iter = *this;
+        return iter.next(value);
+    }
 };
 
 template <typename T>
@@ -173,6 +179,12 @@ struct RevTokenIter {
 
         return true;
     }
+
+    [[nodiscard]] constexpr bool
+    peek(Slice<T>* value) {
+        auto iter = *this;
+        return iter.next(value);
+    }
 };
 
 template <typename T>
@@ -221,6 +233,12 @@ struct SplitIter {
         *value = buffer.sub(start, end);
 
         return true;
+    }
+
+    [[nodiscard]] constexpr bool
+    peek(Slice<T>* value) {
+        auto iter = *this;
+        return iter.next(value);
     }
 };
 
