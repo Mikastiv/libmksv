@@ -1,5 +1,6 @@
 #include "image.hpp"
 
+#include "error.hpp"
 #include "fmt.hpp"
 #include "io.hpp"
 #include "utils.hpp"
@@ -49,6 +50,13 @@ load_tga(const mem::Allocator allocator, const Str filename, Image* out_image) {
 
     const TGAImageType type = (TGAImageType)(header->image_type & 0b11);
     const TGACompressionType compression = (TGACompressionType)(header->image_type & 0b1000);
+
+    const mem::Slice<u8> image_id = { image_data.ptr + sizeof(TGAHeader), header->id_len };
+    const mem::Slice<u8> color_map = { image_id.ptr + image_id.len, header->color_map_len };
+
+    const mem::Slice<u8> pixels = { color_map.ptr + color_map.len,
+                                    (u64)header->width * (u64)header->height *
+                                        (u64)header->pixel_depth };
 
     (void)type;
     (void)compression;
@@ -101,7 +109,7 @@ struct DIBHeader {
 
 static bool
 is_bmp_compression_supported(const BMPCompressionType type) {
-    return type == BMPCompressionType::Bitfields;
+    return type == BMPCompressionType::Bitfields || type == BMPCompressionType::Rgb;
 }
 
 [[nodiscard]] bool
@@ -114,65 +122,76 @@ load_bmp(const mem::Allocator allocator, const Str filename, Image* out_image) {
 
     const bool is_srgb = header->color_space == 'sRGB' || header->color_space == 'Win ';
 
-    if (!mem::equal(Str{ "BM" }, Str{ (u8*)bmp_header->ident, 2 }) || !is_srgb) {
-        fmt::print_stderr("Unsupported BMP version\n");
-        return false;
-    }
+    if (!mem::equal(Str{ "BM" }, Str{ (u8*)bmp_header->ident, 2 }) || !is_srgb)
+        return err::error("Unsupported BMP version\n");
 
-    if (header->bpp != 32) {
+    if (header->bpp != 32 && header->bpp != 24) {
         fmt::print_stderr("Unsupported bpp format\n");
         return false;
     }
 
-    if (header->n_color_planes != 1) {
-        fmt::print_stderr("Number of color planes is not 1\n");
-        return false;
-    }
-
-    if (!is_bmp_compression_supported(header->compression)) {
-        fmt::print_stderr("Unsupported compression\n");
-        return false;
-    }
-
-    if (header->n_colors != 0) {
-        fmt::print_stderr("Color palettes unsupported\n");
-        return false;
-    }
+    if (header->n_color_planes != 1) return err::error("Number of color planes is not 1\n");
+    if (!is_bmp_compression_supported(header->compression))
+        return err::error("Unsupported compression\n");
+    if (header->n_colors != 0) return err::error("Color palettes unsupported\n");
 
     const bool flipped = header->height < 0;
-    const u32 stride = mem::align_up<u32>(header->bpp * (u32)header->width / 32, 4);
-    u32* pixel_row = (u32*)(image_data.ptr + bmp_header->image_offset);
+    const u32 pixel_width = header->bpp / 8;
+    const u32 stride = mem::align_up<u32>((header->bpp * (u32)header->width / 32) * 4, 4);
+    u8* pixel_row = image_data.ptr + bmp_header->image_offset;
 
     Image img = {
         .width = (u32)header->width,
         .height = flipped ? (u32)-header->height : (u32)header->height,
         .bpp = header->bpp,
     };
-    if (!allocator.alloc(stride * img.height, &img.pixels)) {
-        fmt::print_stderr("Failed to allocate memory\n");
-        return false;
-    }
+
+    if (!allocator.alloc(img.width * 4 * img.height, &img.pixels)) return ALLOC_FAILED;
 
     if (flipped) pixel_row += stride * (img.height - 1);
-    const u32 r_shift = clz(header->red_mask);
-    const u32 g_shift = clz(header->green_mask);
-    const u32 b_shift = clz(header->blue_mask);
-    const u32 a_shift = clz(header->alpha_mask);
 
-    for (u64 j = 0; j < img.height; ++j) {
-        for (u64 i = 0; i < img.width; ++i) {
-            const u32 pixel = pixel_row[i];
-            const u32 r = (pixel & header->red_mask) >> r_shift;
-            const u32 g = (pixel & header->green_mask) >> g_shift;
-            const u32 b = (pixel & header->blue_mask) >> b_shift;
-            const u32 a = (pixel & header->alpha_mask) >> a_shift;
-            const u32 out = (a << 24) | (b << 16) | (g << 8) | r;
-            img.pixels.ptr[j * img.width + i] = out;
-        }
-        if (flipped)
-            pixel_row -= stride;
-        else
-            pixel_row += stride;
+    switch (header->compression) {
+        case BMPCompressionType::Bitfields: {
+            const u32 r_shift = clz(header->red_mask);
+            const u32 g_shift = clz(header->green_mask);
+            const u32 b_shift = clz(header->blue_mask);
+            const u32 a_shift = clz(header->alpha_mask);
+
+            for (u64 j = 0; j < img.height; ++j) {
+                for (u64 i = 0; i < img.width; ++i) {
+                    const u32 pixel = *(u32*)&pixel_row[i * pixel_width];
+                    const u32 r = (pixel & header->red_mask) >> r_shift;
+                    const u32 g = (pixel & header->green_mask) >> g_shift;
+                    const u32 b = (pixel & header->blue_mask) >> b_shift;
+                    const u32 a = (pixel & header->alpha_mask) >> a_shift;
+                    const u32 out = (a << 24) | (b << 16) | (g << 8) | r;
+                    img.pixels.ptr[j * img.width + i] = out;
+                }
+                if (flipped)
+                    pixel_row -= stride;
+                else
+                    pixel_row += stride;
+            }
+        } break;
+        case BMPCompressionType::Rgb: {
+            for (u64 j = 0; j < img.height; ++j) {
+                for (u64 i = 0; i < img.width; ++i) {
+                    const u32 b = pixel_row[i * pixel_width];
+                    const u32 g = pixel_row[i * pixel_width + 1];
+                    const u32 r = pixel_row[i * pixel_width + 2];
+                    const u32 a = header->bpp == 32 ? pixel_row[i * pixel_width + 3] : 0xFF;
+                    const u32 out = (a << 24) | (b << 16) | (g << 8) | r;
+                    img.pixels.ptr[j * img.width + i] = out;
+                }
+                if (flipped)
+                    pixel_row -= stride;
+                else
+                    pixel_row += stride;
+            }
+        } break;
+        default: {
+            return ERROR("Unreachable\n");
+        } break;
     }
 
     *out_image = img;
