@@ -41,6 +41,18 @@ struct Slice {
           len{ str_len(s) } {
     }
 
+    T&
+    operator[](const u64 idx) {
+        assert(idx < len);
+        return ptr[idx];
+    }
+
+    const T&
+    operator[](const u64 idx) const {
+        assert(idx < len);
+        return ptr[idx];
+    }
+
     constexpr Slice
     at(const u64 index) const {
         assert(index < len);
@@ -105,10 +117,47 @@ is_delimiter(const Slice<T> slice, const Slice<T> delimiter, const u64 index, co
     if (!any) return equal(slice.sub(index, index + delimiter.len), delimiter);
 
     // match any character
-    for (u64 i = 0; i < delimiter.len; ++i) {
-        if (delimiter.ptr[i] == *slice.sub(index, index + 1).ptr) return true;
+    for (const auto d : delimiter) {
+        if (d == *slice.sub(index, index + 1).ptr) return true;
     }
     return false;
+}
+
+template <typename T>
+constexpr Slice<T>
+trim(const Slice<T> slice, const Slice<T> to_trim, const bool any) {
+    const i64 len = any ? 1 : (i64)to_trim.len;
+
+    i64 start = 0;
+    i64 end = (i64)slice.len;
+    if (any) {
+        while (start < end) {
+            bool found = false;
+            for (const auto t : to_trim) {
+                if (t == slice[(u64)start]) found = true;
+            }
+            if (!found) break;
+            ++start;
+        }
+        while (end > start) {
+            bool found = false;
+            for (const auto t : to_trim) {
+                if (t == slice[(u64)(end - 1)]) found = true;
+            }
+            if (!found) break;
+            --end;
+        }
+    } else {
+        while (start < (i64)slice.len &&
+               equal({ slice.ptr + start, math::min((u64)len, slice.len - (u64)start) }, to_trim)) {
+            start += len;
+        }
+        while (end - len > start && equal({ slice.ptr + end - len, (u64)len }, to_trim)) {
+            end -= len;
+        }
+    }
+
+    return slice.sub((u64)start, (u64)end);
 }
 
 template <typename T>
@@ -119,7 +168,7 @@ struct TokenIter {
     bool any;
 
     [[nodiscard]] constexpr bool
-    next(Slice<T>* value) {
+    next(Slice<T>* out_value) {
         const u64 len = any ? 1 : delimiter.len;
 
         while (index < buffer.len && is_delimiter(buffer, delimiter, index, any)) {
@@ -134,15 +183,34 @@ struct TokenIter {
 
         index += end - start;
 
-        *value = buffer.sub(start, end);
+        *out_value = buffer.sub(start, end);
 
         return true;
     }
 
     [[nodiscard]] constexpr bool
-    peek(Slice<T>* value) {
+    peek(Slice<T>* out_value) {
         auto iter = *this;
-        return iter.next(value);
+        return iter.next(out_value);
+    }
+
+    [[nodiscard]] constexpr bool
+    to_end(Slice<T>* out_value) const {
+        const u64 len = any ? 1 : delimiter.len;
+        u64 idx = index;
+
+        while (idx < buffer.len && is_delimiter(buffer, delimiter, idx, any)) {
+            idx += len;
+        }
+
+        if (idx == buffer.len) return false;
+
+        const u64 start = idx;
+        const u64 end = buffer.len;
+
+        *out_value = buffer.sub(start, end);
+
+        return true;
     }
 };
 
@@ -173,12 +241,14 @@ struct RevTokenIter {
     bool done = false;
 
     [[nodiscard]] constexpr bool
-    next(Slice<T>* value) {
+    next(Slice<T>* out_value) {
         const u64 len = any ? 1 : delimiter.len;
 
         if (done) return false;
 
         u64 end = index;
+
+        if (index == buffer.len) index -= len;
 
         while (index != 0 && is_delimiter(buffer, delimiter, index, any)) {
             if (index < len)
@@ -195,15 +265,15 @@ struct RevTokenIter {
         index = start;
         if (index == 0) done = true;
 
-        *value = buffer.sub(start + (start == 0 ? 0 : len), end);
+        *out_value = buffer.sub(start + (start == 0 ? 0 : len), end);
 
         return true;
     }
 
     [[nodiscard]] constexpr bool
-    peek(Slice<T>* value) {
+    peek(Slice<T>* out_value) {
         auto iter = *this;
-        return iter.next(value);
+        return iter.next(out_value);
     }
 };
 
@@ -238,7 +308,7 @@ struct SplitIter {
     bool any;
 
     [[nodiscard]] constexpr bool
-    next(Slice<T>* value) {
+    next(Slice<T>* out_value) {
         const u64 len = any ? 1 : delimiter.len;
 
         if (index == buffer.len) return false;
@@ -250,15 +320,15 @@ struct SplitIter {
         index += end - start;
         index = math::min(buffer.len, index + len);
 
-        *value = buffer.sub(start, end);
+        *out_value = buffer.sub(start, end);
 
         return true;
     }
 
     [[nodiscard]] constexpr bool
-    peek(Slice<T>* value) {
+    peek(Slice<T>* out_value) {
         auto iter = *this;
-        return iter.next(value);
+        return iter.next(out_value);
     }
 };
 
