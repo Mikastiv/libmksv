@@ -12,9 +12,60 @@ struct HashMap {
         T value;
     };
 
+    struct Iterator {
+        ArrayList<ArrayList<Entry>>* elems;
+        u64 bucket_idx;
+        u64 entry_idx;
+
+        Entry&
+        operator*() const {
+            return (*elems)[bucket_idx][entry_idx];
+        }
+
+        Iterator&
+        operator++() {
+            const u64 size = (*elems)[bucket_idx].size;
+            if (entry_idx + 1 < size) {
+                ++entry_idx;
+                return *this;
+            }
+
+            u64 i = bucket_idx + 1;
+            while (i < (*elems).size) {
+                if ((*elems)[i].size != 0) {
+                    bucket_idx = i;
+                    entry_idx = 0;
+                    return *this;
+                }
+                ++i;
+            }
+
+            bucket_idx = (*elems).size;
+            return *this;
+        }
+
+        Iterator
+        operator++(int) const {
+            Iterator it = *this;
+            ++(*this);
+            return it;
+        }
+
+        bool
+        operator==(const Iterator& other) const {
+            return bucket_idx == other.bucket_idx && entry_idx == other.entry_idx;
+        }
+
+        bool
+        operator!=(const Iterator& other) const {
+            return !(*this == other);
+        }
+    };
+
     mem::Allocator allocator;
     ArrayList<ArrayList<Entry>> elems;
     u64 size;
+    u64 first;
 
     [[nodiscard]] static bool
     init(const mem::Allocator allocator, const u64 initial_size, HashMap* out_map) {
@@ -29,6 +80,7 @@ struct HashMap {
             if (!map.elems.append(ArrayList<Entry>::init(allocator))) return false;
         }
 
+        map.first = map.size;
         *out_map = map;
 
         return true;
@@ -49,7 +101,11 @@ struct HashMap {
             }
         }
 
-        return elems[idx].append(Entry{ key, value });
+        if (!elems[idx].append(Entry{ key, value })) return false;
+
+        if (idx < first) first = idx;
+
+        return true;
     }
 
     [[nodiscard]] bool
@@ -62,6 +118,49 @@ struct HashMap {
             }
         }
         return false;
+    }
+
+    void
+    clear() {
+        for (auto& e : elems) {
+            e.clear();
+        }
+    }
+
+    Iterator
+    begin() {
+        return {
+            .elems = &elems,
+            .bucket_idx = first,
+            .entry_idx = 0,
+        };
+    }
+
+    Iterator
+    begin() const {
+        return {
+            .elems = &elems,
+            .bucket_idx = first,
+            .entry_idx = 0,
+        };
+    }
+
+    Iterator
+    end() {
+        return {
+            .elems = &elems,
+            .bucket_idx = elems.size,
+            .entry_idx = 0,
+        };
+    }
+
+    Iterator
+    end() const {
+        return {
+            .elems = &elems,
+            .bucket_idx = elems.size,
+            .entry_idx = 0,
+        };
     }
 
 private:
