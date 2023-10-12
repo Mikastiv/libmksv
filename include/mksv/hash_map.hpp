@@ -41,6 +41,7 @@ struct HashMap {
             }
 
             bucket_idx = (*elems).size;
+            entry_idx = 0;
             return *this;
         }
 
@@ -80,7 +81,7 @@ struct HashMap {
             if (!map.elems.append(ArrayList<Entry>::init(allocator))) return false;
         }
 
-        map.first = map.size;
+        map.first = map.elems.size;
         *out_map = map;
 
         return true;
@@ -104,6 +105,8 @@ struct HashMap {
         if (!elems[idx].append(Entry{ key, value })) return false;
 
         if (idx < first) first = idx;
+
+        ++size;
 
         return true;
     }
@@ -175,9 +178,26 @@ private:
         return ratio >= 0.8;
     }
 
-    // TODO
+    void
+    free() {
+        for (u64 idx = 0; idx < size; ++idx) {
+            elems[idx].deinit();
+        }
+        elems.deinit();
+    }
+
     [[nodiscard]] bool
     grow() {
+        HashMap new_hmap;
+        if (!init(allocator, size * 2, &new_hmap)) return false;
+
+        for (const auto& e : *this) {
+            if (!new_hmap.insert(e.key, e.value)) return false;
+        }
+
+        free();
+        *this = new_hmap;
+
         return true;
     }
 };
