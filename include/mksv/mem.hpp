@@ -463,6 +463,8 @@ find(const Slice<T> haystack, const Slice<T> needle, u64* out_idx) {
 
 using Str = mksv::mem::Slice<u8>;
 
+static const Str WHITESPACE = " \t\v\n\r";
+
 template <u64 size>
 inline Str
 str(u8 (&array)[size]) {
