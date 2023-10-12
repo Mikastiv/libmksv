@@ -53,6 +53,26 @@ struct Slice {
         assert(end <= len);
         return Slice{ ptr + start, end - start };
     }
+
+    T*
+    begin() {
+        return ptr;
+    }
+
+    const T*
+    begin() const {
+        return ptr;
+    }
+
+    T*
+    end() {
+        return ptr + len;
+    }
+
+    const T*
+    end() const {
+        return ptr + len;
+    }
 };
 
 template <typename T>
