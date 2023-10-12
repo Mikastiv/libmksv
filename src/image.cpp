@@ -149,6 +149,7 @@ load_bmp(const mem::Allocator allocator, const Str filename, Image* out_image) {
     if (!allocator.alloc(img.width * 4 * img.height, &img.pixels)) return ALLOC_FAILED;
 
     if (flipped) pixel_row += stride * (img.height - 1);
+    const i32 increment = flipped ? -(i32)stride : (i32)stride;
 
     switch (header->compression) {
         case BMPCompressionType::Bitfields: {
@@ -167,10 +168,7 @@ load_bmp(const mem::Allocator allocator, const Str filename, Image* out_image) {
                     const u32 out = (a << 24) | (b << 16) | (g << 8) | r;
                     img.pixels.ptr[j * img.width + i] = out;
                 }
-                if (flipped)
-                    pixel_row -= stride;
-                else
-                    pixel_row += stride;
+                pixel_row += increment;
             }
         } break;
         case BMPCompressionType::Rgb: {
@@ -179,14 +177,11 @@ load_bmp(const mem::Allocator allocator, const Str filename, Image* out_image) {
                     const u32 b = pixel_row[i * pixel_width];
                     const u32 g = pixel_row[i * pixel_width + 1];
                     const u32 r = pixel_row[i * pixel_width + 2];
-                    const u32 a = header->bpp == 32 ? pixel_row[i * pixel_width + 3] : 0xFF;
+                    const u32 a = 0xFF;
                     const u32 out = (a << 24) | (b << 16) | (g << 8) | r;
                     img.pixels.ptr[j * img.width + i] = out;
                 }
-                if (flipped)
-                    pixel_row -= stride;
-                else
-                    pixel_row += stride;
+                pixel_row += increment;
             }
         } break;
         default: {
