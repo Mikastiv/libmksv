@@ -5,7 +5,6 @@
 namespace mksv {
 
 struct Image {
-    u64 hash;
     u64 width;
     u64 height;
     u64 bpp;

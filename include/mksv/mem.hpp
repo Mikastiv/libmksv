@@ -161,6 +161,12 @@ trim(const Slice<T> slice, const Slice<T> to_trim, const bool any) {
 }
 
 template <typename T>
+constexpr Slice<u8>
+as_bytes(const Slice<T> slice) {
+    return Slice<u8>{ (u8*)slice.ptr, slice.len * sizeof(T) };
+}
+
+template <typename T>
 struct TokenIter {
     Slice<T> buffer;
     Slice<T> delimiter;

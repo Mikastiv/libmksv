@@ -3,7 +3,6 @@
 #include "bit.hpp"
 #include "error.hpp"
 #include "fmt.hpp"
-#include "hash.hpp"
 #include "io.hpp"
 
 namespace mksv {
@@ -190,8 +189,6 @@ load_bmp(const mem::Allocator allocator, const Str filename, Image* out_image) {
         } break;
     }
 
-    img.hash = hash::hash({ (u8*)img.pixels.ptr, img.pixels.len * sizeof(u32) });
-
     *out_image = img;
 
     return true;
@@ -206,9 +203,7 @@ deinit_image(const mem::Allocator allocator, Image image) {
 
 Image
 black_image() {
-    const u64 hash = hash::hash({ (u8*)&black_pixel, 4 });
     return {
-        .hash = hash,
         .width = 1,
         .height = 1,
         .bpp = 32,
