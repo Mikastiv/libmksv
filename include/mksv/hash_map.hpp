@@ -128,6 +128,7 @@ struct HashMap {
         for (auto& e : elems) {
             e.clear();
         }
+        first = elems.size;
     }
 
     Iterator
