@@ -49,7 +49,7 @@ os_allocate(void* ctx, const u64 size, const u64 alignment, mem::Slice<u8>* out_
 
     *out_block = mem::Slice<u8>{ (u8*)block, aligned_size };
     return true;
-#elif OS_MACOS
+#elif OS_MACOS | OS_LINUX
     u64 aligned_size = mem::align_up(size, ctx_ptr->allocation_granularity);
     aligned_size = mem::align_up(aligned_size, alignment);
 

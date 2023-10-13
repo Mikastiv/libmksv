@@ -5,6 +5,7 @@
 namespace mksv {
 
 struct Image {
+    u64 hash;
     u64 width;
     u64 height;
     u64 bpp;
@@ -21,6 +22,9 @@ load_bmp(const mem::Allocator allocator, const Str filename, Image* out_image);
 
 void
 deinit_image(const mem::Allocator allocator, Image image);
+
+Image
+black_image();
 
 } // namespace img
 

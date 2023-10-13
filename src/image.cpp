@@ -2,6 +2,7 @@
 
 #include "error.hpp"
 #include "fmt.hpp"
+#include "hash.hpp"
 #include "io.hpp"
 #include "utils.hpp"
 
@@ -189,14 +190,30 @@ load_bmp(const mem::Allocator allocator, const Str filename, Image* out_image) {
         } break;
     }
 
+    img.hash = hash::hash({ (u8*)img.pixels.ptr, img.pixels.len * sizeof(u32) });
+
     *out_image = img;
 
     return true;
 }
 
+static const u32 black_pixel = 0;
+
 void
 deinit_image(const mem::Allocator allocator, Image image) {
-    allocator.free(image.pixels);
+    if (image.pixels.ptr != &black_pixel) allocator.free(image.pixels);
+}
+
+Image
+black_image() {
+    const u64 hash = hash::hash({ (u8*)&black_pixel, 4 });
+    return {
+        .hash = hash,
+        .width = 1,
+        .height = 1,
+        .bpp = 32,
+        .pixels = {(u32*)&black_pixel, 1},
+    };
 }
 
 } // namespace img
