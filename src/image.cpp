@@ -1,10 +1,10 @@
 #include "image.hpp"
 
+#include "bit.hpp"
 #include "error.hpp"
 #include "fmt.hpp"
 #include "hash.hpp"
 #include "io.hpp"
-#include "utils.hpp"
 
 namespace mksv {
 namespace img {
@@ -154,10 +154,10 @@ load_bmp(const mem::Allocator allocator, const Str filename, Image* out_image) {
 
     switch (header->compression) {
         case BMPCompressionType::Bitfields: {
-            const u32 r_shift = clz(header->red_mask);
-            const u32 g_shift = clz(header->green_mask);
-            const u32 b_shift = clz(header->blue_mask);
-            const u32 a_shift = clz(header->alpha_mask);
+            const u32 r_shift = bit::clz(header->red_mask);
+            const u32 g_shift = bit::clz(header->green_mask);
+            const u32 b_shift = bit::clz(header->blue_mask);
+            const u32 a_shift = bit::clz(header->alpha_mask);
 
             for (u64 j = 0; j < img.height; ++j) {
                 for (u64 i = 0; i < img.width; ++i) {
