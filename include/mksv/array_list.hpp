@@ -126,6 +126,11 @@ struct ArrayList {
         return true;
     }
 
+    bool
+    empty() const {
+        return size == 0;
+    }
+
     T&
     operator[](const u64 idx) {
         assert(idx < size);
