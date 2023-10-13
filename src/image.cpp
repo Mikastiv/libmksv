@@ -194,5 +194,10 @@ load_bmp(const mem::Allocator allocator, const Str filename, Image* out_image) {
     return true;
 }
 
+void
+deinit_image(const mem::Allocator allocator, Image image) {
+    allocator.free(image.pixels);
+}
+
 } // namespace img
 } // namespace mksv
