@@ -114,6 +114,8 @@ is_bmp_compression_supported(const BMPCompressionType type) {
 
 [[nodiscard]] bool
 load_bmp(const mem::Allocator allocator, const Str filename, Image* out_image) {
+    assert(mem::ends_with(filename, (Str) ".bmp"));
+
     mem::Slice<u8> image_data = {};
     if (!io::read_file(allocator, filename, &image_data)) return false;
 
