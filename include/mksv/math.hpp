@@ -160,7 +160,7 @@ tan(f32 x) {
 
 inline f32
 sqrt(f32 x) {
-    assert(x > 0.0f);
+    assert(x >= 0.0f);
 
 #if ARCH_X64 && (COMPILER_CLANG || COMPILER_GCC)
     float z;
