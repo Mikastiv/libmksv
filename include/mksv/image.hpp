@@ -17,7 +17,7 @@ namespace img {
 load_tga(const mem::Allocator allocator, const Str filename, Image* out_image);
 
 [[nodiscard]] bool
-load_bmp(const mem::Allocator allocator, const Str filename, Image* out_image);
+load_bmp(const mem::Allocator allocator, const Str filename, const bool flip, Image* out_image);
 
 void
 deinit_image(const mem::Allocator allocator, Image image);

@@ -126,6 +126,24 @@ struct Mat4 {
         : e{ x, y, z, w } {
     }
 
+    constexpr Mat4(const Mat3<T>& other)
+        : e{
+              Vec4<T>{ other.e[0], (T)0 },
+              Vec4<T>{ other.e[1], (T)0 },
+              Vec4<T>{ other.e[2], (T)0 },
+              Vec4<T>{ (T)0, (T)0, (T)0, (T)1 }
+    } {
+    }
+
+    constexpr
+    operator Mat3<T>() const {
+        return {
+            e[0],
+            e[1],
+            e[2],
+        };
+    }
+
     Vec4<T>&
     operator[](const u64 idx) {
         assert(idx < 4);

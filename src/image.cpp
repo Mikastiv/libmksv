@@ -113,7 +113,7 @@ is_bmp_compression_supported(const BMPCompressionType type) {
 }
 
 [[nodiscard]] bool
-load_bmp(const mem::Allocator allocator, const Str filename, Image* out_image) {
+load_bmp(const mem::Allocator allocator, const Str filename, const bool flip, Image* out_image) {
     assert(mem::ends_with(filename, (Str) ".bmp"));
 
     mem::Slice<u8> image_data = {};
@@ -137,7 +137,7 @@ load_bmp(const mem::Allocator allocator, const Str filename, Image* out_image) {
         return err::error("Unsupported compression\n");
     if (header->n_colors != 0) return err::error("Color palettes unsupported\n");
 
-    const bool flipped = header->height < 0;
+    bool flipped = header->height < 0;
     const u32 pixel_width = header->bpp / 8;
     const u32 stride = mem::align_up<u32>((header->bpp * (u32)header->width / 32) * 4, 4);
     u8* pixel_row = image_data.ptr + bmp_header->image_offset;
@@ -150,6 +150,7 @@ load_bmp(const mem::Allocator allocator, const Str filename, Image* out_image) {
 
     if (!allocator.alloc(img.width * 4 * img.height, &img.pixels)) return ALLOC_FAILED;
 
+    if (flip) flipped = !flipped;
     if (flipped) pixel_row += stride * (img.height - 1);
     const i32 increment = flipped ? -(i32)stride : (i32)stride;
 
