@@ -56,6 +56,12 @@ min(const T a, const T b) {
     return a < b ? a : b;
 }
 
+template <typename T>
+constexpr T
+clamp(const T x, const T min_v, const T max_v) {
+    return min(max(x, min_v), max_v);
+}
+
 inline constexpr f32
 radians(const f32 degrees) {
     return degrees * (PI / 180.0f);
