@@ -454,7 +454,7 @@ look_at(const Vec3<T>& eye, const Vec3<T>& target, const Vec3<T>& up) {
     rotation[0][1] = yaxis.x;
     rotation[1][1] = yaxis.y;
     rotation[2][1] = yaxis.z;
-    rotation[0][2] = -zaxis.x;
+    rotation[0][2] = -zaxis.x; 
     rotation[1][2] = -zaxis.y;
     rotation[2][2] = -zaxis.z;
 
